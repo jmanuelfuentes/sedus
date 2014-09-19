@@ -1,7 +1,7 @@
 /*
- * File: main_Sedus_14_03_12.cpp
- * Author: Diego + Oriol + Marina
- * Date: 2014_03_12
+ * File: main_Sedus_14_09_19.cpp
+ * Author: Diego + Oriol + Marina + JuanMa
+ * Date: 2014_09_19
  */
 
 /*ARGUMENTS:
@@ -13,12 +13,12 @@
 
 
 /*CHANGES:
- * printing has been reduced to the minimum and statistics for whole block have been eliminated
+ * the new crossover function (joining SC/WR/HS) is now active
  */
 
 /* PARTICULAR CHARACTERISTICS OF THIS MAIN
   */
-//HOLA
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -73,7 +73,7 @@ float C = 0.5; // Population scaled gene conversion rate: C = 4N*kappa*lambda
 int numHS = 1; // Number of hotspots
 int crossoverBegin[maxNumOfHS]; // Start point of crossover regions
 int crossoverEnd[maxNumOfHS]; // End point of crossover regions
-
+float crossoverFrac[maxNumOfHS]; // Fraction of crossover events that fall in each crossover region
 
 string letter = ""; // Simulation ID
 string str;
@@ -195,7 +195,7 @@ void open_files(); // Opening files
 void close_files(); // Closing files
 
 void genealogy(float, int); // rho, 0/1(non structured or structured) //// Filling genealogy matrices in each PROMETHEUS
-void parentpicking(int[maxNumOfHS], int[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
+void parentpicking(int[maxNumOfHS], int[maxNumOfHS], float[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
 
 void duplication(int,int); // Create Duplication for eva (first duplicated chromosome)
 void mutation(float, int, int); // For each fertile chromosome decide if a mutation happens and execute it if necessary
@@ -484,7 +484,7 @@ struct sedus::prev_pres sedus::phaseI(){
                 if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
             }
             prom = t;
-            parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
+            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
             mutation(mu, i, pres);
         }
         // CALCULATE THE STATISTICS
@@ -529,7 +529,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                                     if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                             }
                             prom = t;
-                            parentpicking(crossoverBegin, crossoverEnd, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
+                            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
                             mutation(mu, i,pres);// MUTATION and CONVERSION (for each fertile chromosome)
                             conversion(kappa, i, pres, donorRatio);
                     }
@@ -560,7 +560,7 @@ void sedus::phaseIII(){
                             if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                         }
                         prom = t;
-                        parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
+                        parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
                         mutation(mu, i,pres);
                         conversion(kappa, i,pres, donorRatio);
                     }
@@ -763,12 +763,12 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
 ////  PARENTPICKING, DUPLICATION, MUTATION, CONVERSION  ////
 ////////////////////////////////////////////////////////////
 
-void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
+void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float fractionCross[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
     int j, k, junctionBlock, defHS, HS;
     int father, partner, junction, vald0, valr0, childblocks, minblock, recTract, end, beg;
     chrom * chr;
-    float p;
-    double num;
+    float p, num;
+    bool success;
 
     // PARENT-PICKING
             father = ancestry[i][t];
@@ -785,20 +785,26 @@ void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], int num
                 minblock = minim(pointer[prev][father]->b, pointer[prev][partner]->b);
                 //maxblock = maxim(pointer[prev][father][0].b, pointer[prev][partner][0].b);
                 p = rand() / ((float) RAND_MAX + 1);
-                defHS = 0;
-                for (HS = numCrossRegions; HS > 0; HS--) {
-                    num = HS;
-                    num /= numCrossRegions;
+                defHS = numCrossRegions-1;
+                num = 1;
+                HS = numCrossRegions-1;
+                success = 0;
+                while(HS >= 0 && success==0){
+                    num = num-fractionCross[HS];
                     if (p < num){
                         defHS = HS-1;
                     }
+                    else {
+                        success=1;
+                    }
+                    HS--;
                 }
                 end = crossEnd[defHS];
                 beg = crossBegin[defHS];
                 if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) > beg)) {
                     end = minblock * BLOCKLENGTH;
                 }
-                if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {//LA SEGUNDA CONDICION ESTA IMPLCITA EN LA PRIMERA
+                if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {
                     // If neither father and partner have mutations in any block
                     if ((pointer[prev][father]->mpb[0] == 0) && (pointer[prev][father]->mpb[1] == 0) &&
                         (pointer[prev][father]->mpb[2] == 0) && (pointer[prev][partner]->mpb[0] == 0) &&
@@ -849,7 +855,7 @@ void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], int num
                             }
                         }
                     }
-                } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {//LA PRIMERA CONDICION ESTA IMPLICITA EN SEGUNDA
+                } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {
                      copychr(prev, father, pres, i);
                 }
             }// NO RECOMBINATION
@@ -1946,6 +1952,26 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     donorRatio = argDonorRatio;
     argc = argumentscount;
     correctArguments = 0;
+
+    /* HEM PENSAT QUE L'INPUT PODRIA ANAR MES O MENYS AIXI PERO NO N'ESTEM SEGURS
+     * int numofHS;
+        if(R > 0){
+            numofHS = 1;
+            crossoverBegin[0] = BLOCKLENGTH;
+            crossoverEnd[0] = 2*BLOCKLENGTH;
+            crossoverFrac[0] = 1;
+            correctArguments = 1;
+        } else {
+            numofHS = params->crossover.numHS;
+            for(int HS = 0; HS < numofHS ; HS++){
+                crossoverBegin[HS] =  params->crossover.begin[HS] * BLOCKLENGTH; // vector amb tots els begins (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
+                crossoverEnd[HS] =   params->crossover.end[HS] * BLOCKLENGTH; // vector amb tots els ends (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
+                crossoverFrac[0] =   params->crossover.frac[HS]; // vector amb tots els ends (he de sumar 1!!!)
+                correctArguments = 1;
+             }
+        }
+    */
+
     if (params->crossover.isSC){
         //if (argc == 8){
             crossoverBegin[0] = BLOCKLENGTH;
