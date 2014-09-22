@@ -38,11 +38,16 @@ private slots:
     void setFixLinearText(int value);
     void setFixLinearSliderVisible();
     void changeNdependecies(const QString &value);
+    void quitWork();
+    void hotspots(int value);
+
 
 private:
     QThread *thread;
     sedus *worker;
-
+    bool checkRateHotSopts();
+    bool uidelete;
+    double sumratiohots;
     //QPushButton *m_button;
 };
 

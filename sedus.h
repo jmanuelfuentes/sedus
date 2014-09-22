@@ -44,10 +44,10 @@ public:
         int MEPS;
     };
     struct hotspot{
-        double start1;
-        double end1;
-        double start2;
-        double end2;
+        double start;
+        double end;
+        double rate;
+
     };
 
     struct param_crossover{
@@ -78,8 +78,9 @@ public:
     void setLog(const QString &value);
     void setBar(int value);
     void setChart(const qvdouble &x,const qvdouble &y);
-private:
     bool _working;
+private:
+
     bool _abort;
     QMutex mutex;
     void phaseIII();

@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-
+    uidelete = false;
     ui->setupUi(this);
     // Create the button, make "this" the parent
         //m_button = new QPushButton("My Button", this);
@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     centerWidget();
     connect(ui->m_button, SIGNAL(released()), this, SLOT(handleButton()));
     connect(ui->stop, SIGNAL(released()), this, SLOT(stop()));
+    connect(ui->hotspots, SIGNAL(valueChanged(int)), this, SLOT(hotspots(int)));
     connect(ui->pushButton_dir, SIGNAL(released()), this, SLOT(dirButton()));
     connect(ui->fixlinearslider, SIGNAL(valueChanged(int)), this, SLOT(setFixLinearText(int)));
     connect(ui->fixlinearRadioButton, SIGNAL(toggled(bool)), this, SLOT(setFixLinearSliderVisible()));
@@ -68,8 +69,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //params crossover
     ui->R->setText("10");
-    ui->radioButton_SC->setChecked(true);
-
+    ui->hot1->setVisible(true);
+    ui->hot2->setVisible(false);
+    ui->hot3->setVisible(false);
+    ui->hot4->setVisible(false);
+    ui->hot5->setVisible(false);
+    ui->hotspots->setValue(1);
+    ui->rate1->setText("1");
 
     /*ui->R->setText("10");
     ui->C->setText("1");
@@ -82,31 +88,116 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
+void MainWindow::hotspots(int value){
+    switch (value)
+    {
+        case 1:{
+            ui->hot1->setVisible(true);ui->hot2->setVisible(false);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
+            ui->rate1->setText("1");
+            break;
+        }
+        case 2:{
+            ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
+            ui->rate1->setText("0.5");ui->rate2->setText("0.5");
+            break;
+        }
+        case 3:{
+            ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
+            ui->rate1->setText("0.33");ui->rate2->setText("0.33");ui->rate3->setText("0.34");
+            break;
+        }
+        case 4:{
+            ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(false);
+            ui->rate1->setText("0.25");ui->rate2->setText("0.25");ui->rate3->setText("0.25");ui->rate4->setText("0.25");
+            break;
+        }
+        case 5:{
+            ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(true);
+            ui->rate1->setText("0.2");ui->rate2->setText("0.2");ui->rate3->setText("0.2");ui->rate4->setText("0.2");ui->rate5->setText("0.2");
+            break;
+        }
+    }
+}
+
 void MainWindow::stop(){
+    //worker->abort();
+    //delete worker;
     worker->abort();
-    //thread->wait();
-    //delete thread;
-    delete worker;
+    //thread->quit();
+
+
     ui->progressBar->setValue(0);
     ui->m_button->setEnabled(true);
     ui->stop->setEnabled(false);
     ui->log->clear();
     ui->customPlot->clearGraphs();
-    ui->customPlot->setEnabled(false);
+    //ui->customPlot->setEnabled(false);
+}
+
+void MainWindow::quitWork(){
+    thread->quit();
+    thread->wait();
+    delete thread;
+    delete worker;
+
+    ui->progressBar->setValue(0);
+    ui->m_button->setEnabled(true);
+    ui->stop->setEnabled(false);
+    ui->log->clear();
+    ui->customPlot->clearGraphs();
+    //ui->customPlot->setEnabled(false);
+    if(uidelete){delete ui;}
 }
 
 MainWindow::~MainWindow()
 {
-    worker->abort();
-        thread->wait();
-        delete thread;
-        delete worker;
-    delete ui;
+    if(thread != NULL){
+        worker->abort();
+        uidelete = true;
+    }else{
+        delete ui;
+    }
+
 }
 void MainWindow::dirButton()
 {
     QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),"/home",QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
    ui->dir->setText(dir);
+}
+
+bool MainWindow::checkRateHotSopts(){
+    switch (ui->hotspots->value())
+    {
+        case 1:{
+            sumratiohots=ui->rate1->text().toDouble();
+            if(sumratiohots!=1) return false;
+            break;
+        }
+        case 2:{
+            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble());
+            if(sumratiohots!=1) return false;
+            break;
+        }
+        case 3:{
+            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble());
+            if(sumratiohots!=1) return false;
+            break;
+        }
+        case 4:{
+            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble()+ui->rate4->text().toDouble());
+            std::cout << double(sumratiohots)<<" "<<double(1) << std::endl;
+            if(sumratiohots!=1) return false;
+            break;
+
+        }
+        case 5:{
+            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble()+ui->rate4->text().toDouble()+ui->rate4->text().toDouble());
+            if(sumratiohots!=1) return false;
+            break;
+        }
+
+     }
+    return true;
 }
 
 void MainWindow::handleButton()
@@ -115,10 +206,17 @@ void MainWindow::handleButton()
 
     qRegisterMetaType<qvdouble>("qvdouble");
 
+    //CHECKS
+    if(!checkRateHotSopts()){
+        QMessageBox::information(this, tr("ERROR HOTSPOTS"), "The sum of  the all hotspots ratio must be one. (Current sum: "+QString::number(sumratiohots)+")");
+        return;
+    }
 
-    ui->progressBar->setMaximum(100);
-    ui->progressBar->setValue(0);
-    ui->progressBar->setVisible(true);
+    if(!ui->progressBar->isVisible()){
+        ui->progressBar->setMaximum(100);
+        ui->progressBar->setValue(0);
+        ui->progressBar->setVisible(true);
+    }
     ui->customPlot->setVisible(true);
     ui->log->setVisible(true);
     ui->m_button->setEnabled(false);
@@ -156,13 +254,9 @@ void MainWindow::handleButton()
     params.igc.MEPS = ui->meps->text().toInt();
     //params crossover
     params.crossover.R = ui->R->text().toFloat();
-    params.crossover.isSC = (ui->radioButton_SC->isChecked()?true:false);
-    //argv[2]=ui->R->text().toLocal8Bit().data();
-    //argv[3]=ui->C->text().toLocal8Bit().data();
-    //argv[4]=ui->superTime->text().toLocal8Bit().data();
-    //argv[5]=ui->timeToFixation->text().toLocal8Bit().data();
-    //argv[6]=ui->donoRatio->text().toLocal8Bit().data();
-    //argv[7]=ui->dir->text().toLocal8Bit().data();
+
+
+
     #ifdef _WIN32
         // replace(argv[7], "\\", "\\\\");
         params.dir=params.dir+"\\";
@@ -216,7 +310,8 @@ void MainWindow::handleButton()
     connect(worker, SIGNAL(valueChanged(QString)), ui->label, SLOT(setText(QString)));
     connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(dowork()));
-    connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
+    connect(worker, SIGNAL(finished()), this, SLOT(quitWork()));
+    //connect(worker, SIGNAL(finished()), thread, SLOT(quit()), Qt::DirectConnection);
     connect(worker, SIGNAL(addLog(const QString)),this, SLOT(setLog(const QString)));
     connect(worker, SIGNAL(addBar(int)),this, SLOT(setBar(int)));
     connect(worker, SIGNAL(addChart(qvdouble,qvdouble)),this, SLOT(setChart(qvdouble,qvdouble)));
@@ -231,9 +326,10 @@ void MainWindow::handleButton()
         QThread::msleep(1000);
     }*/
 }
+
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
-    ui->customPlot->xAxis->setRange(0, x[0].length());
+    ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->generations->text().toInt())/1000);
     ui->customPlot->yAxis->setRange(0, 15);
     ui->customPlot->graph(0)->setData(x[0], y[0]);
     ui->customPlot->graph(1)->setData(x[1], y[1]);

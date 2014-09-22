@@ -1,7 +1,7 @@
 /*
- * File: main_Sedus_14_09_19.cpp
- * Author: Diego + Oriol + Marina + JuanMa
- * Date: 2014_09_19
+ * File: main_Sedus_14_03_12.cpp
+ * Author: Diego + Oriol + Marina
+ * Date: 2014_03_12
  */
 
 /*ARGUMENTS:
@@ -13,12 +13,12 @@
 
 
 /*CHANGES:
- * the new crossover function (joining SC/WR/HS) is now active
+ * printing has been reduced to the minimum and statistics for whole block have been eliminated
  */
 
 /* PARTICULAR CHARACTERISTICS OF THIS MAIN
   */
-
+//HOLA
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -73,7 +73,7 @@ float C = 0.5; // Population scaled gene conversion rate: C = 4N*kappa*lambda
 int numHS = 1; // Number of hotspots
 int crossoverBegin[maxNumOfHS]; // Start point of crossover regions
 int crossoverEnd[maxNumOfHS]; // End point of crossover regions
-float crossoverFrac[maxNumOfHS]; // Fraction of crossover events that fall in each crossover region
+
 
 string letter = ""; // Simulation ID
 string str;
@@ -195,7 +195,7 @@ void open_files(); // Opening files
 void close_files(); // Closing files
 
 void genealogy(float, int); // rho, 0/1(non structured or structured) //// Filling genealogy matrices in each PROMETHEUS
-void parentpicking(int[maxNumOfHS], int[maxNumOfHS], float[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
+void parentpicking(int[maxNumOfHS], int[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
 
 void duplication(int,int); // Create Duplication for eva (first duplicated chromosome)
 void mutation(float, int, int); // For each fertile chromosome decide if a mutation happens and execute it if necessary
@@ -319,7 +319,7 @@ void sedus::dowork() {
     cout<<"N: "<<N<<endl;
     #undef SUPERTIME
     #define SUPERTIME sup
-
+    perc=0;
     phaseIiter=BURNIN/PROMETHEUS;
     phaseIIiter=((BURNIN+STRUCTURED)/PROMETHEUS)-phaseIiter;
     phaseIIIiter=(TIMELENGTH/PROMETHEUS)-(phaseIiter+phaseIIiter);
@@ -332,7 +332,7 @@ void sedus::dowork() {
         x[i].resize(iterationspersupertime);
         y[i].resize(iterationspersupertime);
     }
-    for(int j=0;j<4;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = i;}}
+    for(int j=0;j<4;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = (i*PROMETHEUS)/1000;}}
 
     arry1.resize(SUPERTIME);
     arry2.resize(SUPERTIME);
@@ -372,7 +372,7 @@ void sedus::dowork() {
 
         // INITIALIZATION SUPERTIME
         for (run = 0; run < SUPERTIME; run++) {
-
+            if(_abort)break;
             //cout << "SUPERTIME = " << run << "\n";
             QString esci=QString::fromStdString("Run "+std::to_string(run+1)+" of "+std::to_string(SUPERTIME));
             setLog(esci);
@@ -407,6 +407,7 @@ void sedus::dowork() {
             cout << "PHASE I" << endl;
             setLog(QString::fromStdString("\tPHASE I"));
             prev_pres ret = phaseI();
+            if(_abort)break;
             /* END PHASE I */
             //log->append("AA5\n");
             /*  PHASE II: STRUCTURED TRAJECTORY  */
@@ -414,12 +415,14 @@ void sedus::dowork() {
             setLog(QString::fromStdString("\tPHASE II"));
             //endTime=phaseII(timeToFixation,ret.prev,ret.pres);
             phaseII(timeToFixation,ret.prev,ret.pres);
+            if(_abort)break;
             /* END PHASE II */
 
             /*  PHASE III: RESOLUTION  */
             cout << "PHASE III" << endl;
             setLog(QString::fromStdString("\tPHASE III"));
             phaseIII();
+            if(_abort)break;
             /* END PHASE III */
 
             for (j = 0; j < B+2; j++) {
@@ -452,10 +455,10 @@ void sedus::dowork() {
    // cout << "time: " << elapsed_secs;
     setBar(100);
     setLog("Finished");
-    /*mutex.lock();
+    mutex.lock();
    _working = false;
     mutex.unlock();
-    emit finished();*/
+    emit finished();
 }
 
 
@@ -470,6 +473,7 @@ struct sedus::prev_pres sedus::phaseI(){
     bool does_print = false;
     prev_pres ret;
     for (era = 0; era < (int) BURNIN / PROMETHEUS; era++) {
+        if(_abort)break;
         //perc+=iterperc;
         //probar->setValue(int(perc+=iterperc));
         setBar(int(perc+=iterperc));
@@ -484,7 +488,7 @@ struct sedus::prev_pres sedus::phaseI(){
                 if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
             }
             prom = t;
-            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
+            parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
             mutation(mu, i, pres);
         }
         // CALCULATE THE STATISTICS
@@ -514,6 +518,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
 
                 // BURNIN/PROMETHEUS -> (BURNIN+STRUCTURED)/PROMETHEUS (30 -> 50)
                 for (era = (int) BURNIN / PROMETHEUS; era < (int) (BURNIN + STRUCTURED) / PROMETHEUS; era++) {
+                    if(_abort)break;
                     //perc+=iterperc;
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
@@ -529,7 +534,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                                     if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                             }
                             prom = t;
-                            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
+                            parentpicking(crossoverBegin, crossoverEnd, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
                             mutation(mu, i,pres);// MUTATION and CONVERSION (for each fertile chromosome)
                             conversion(kappa, i, pres, donorRatio);
                     }
@@ -544,6 +549,7 @@ void sedus::phaseIII(){
     double timestatstotal=0.0;
     bool does_print = false;
     for (era = (int) (BURNIN + STRUCTURED) / PROMETHEUS; era < (int) TIMELENGTH / PROMETHEUS; era++) {
+                    if(_abort)break;
                     //perc+=iterperc;
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
@@ -560,7 +566,7 @@ void sedus::phaseIII(){
                             if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                         }
                         prom = t;
-                        parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
+                        parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
                         mutation(mu, i,pres);
                         conversion(kappa, i,pres, donorRatio);
                     }
@@ -763,12 +769,12 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
 ////  PARENTPICKING, DUPLICATION, MUTATION, CONVERSION  ////
 ////////////////////////////////////////////////////////////
 
-void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float fractionCross[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
+void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
     int j, k, junctionBlock, defHS, HS;
     int father, partner, junction, vald0, valr0, childblocks, minblock, recTract, end, beg;
     chrom * chr;
-    float p, num;
-    bool success;
+    float p;
+    double num;
 
     // PARENT-PICKING
             father = ancestry[i][t];
@@ -785,26 +791,20 @@ void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float f
                 minblock = minim(pointer[prev][father]->b, pointer[prev][partner]->b);
                 //maxblock = maxim(pointer[prev][father][0].b, pointer[prev][partner][0].b);
                 p = rand() / ((float) RAND_MAX + 1);
-                defHS = numCrossRegions-1;
-                num = 1;
-                HS = numCrossRegions-1;
-                success = 0;
-                while(HS >= 0 && success==0){
-                    num = num-fractionCross[HS];
+                defHS = 0;
+                for (HS = numCrossRegions; HS > 0; HS--) {
+                    num = HS;
+                    num /= numCrossRegions;
                     if (p < num){
                         defHS = HS-1;
                     }
-                    else {
-                        success=1;
-                    }
-                    HS--;
                 }
                 end = crossEnd[defHS];
                 beg = crossBegin[defHS];
                 if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) > beg)) {
                     end = minblock * BLOCKLENGTH;
                 }
-                if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {
+                if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {//LA SEGUNDA CONDICION ESTA IMPLCITA EN LA PRIMERA
                     // If neither father and partner have mutations in any block
                     if ((pointer[prev][father]->mpb[0] == 0) && (pointer[prev][father]->mpb[1] == 0) &&
                         (pointer[prev][father]->mpb[2] == 0) && (pointer[prev][partner]->mpb[0] == 0) &&
@@ -855,7 +855,7 @@ void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float f
                             }
                         }
                     }
-                } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {
+                } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {//LA PRIMERA CONDICION ESTA IMPLICITA EN SEGUNDA
                      copychr(prev, father, pres, i);
                 }
             }// NO RECOMBINATION
@@ -1852,6 +1852,8 @@ float round(float number_to_round, int decimal_places) // pow() doesn't work wit
 //	}
 //
 //}
+
+
 void sedus::requestWork()
 {
     mutex.lock();
@@ -1863,9 +1865,11 @@ void sedus::requestWork()
 }
 void sedus::abort()
 {
+    mutex.lock();
     if (_working) {
            _abort = true;
        }
+    mutex.unlock();
 }
  void sedus::setLog(const QString &value){
      emit addLog(value);
@@ -1952,33 +1956,13 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     donorRatio = argDonorRatio;
     argc = argumentscount;
     correctArguments = 0;
-
-    /* HEM PENSAT QUE L'INPUT PODRIA ANAR MES O MENYS AIXI PERO NO N'ESTEM SEGURS
-     * int numofHS;
-        if(R > 0){
-            numofHS = 1;
-            crossoverBegin[0] = BLOCKLENGTH;
-            crossoverEnd[0] = 2*BLOCKLENGTH;
-            crossoverFrac[0] = 1;
-            correctArguments = 1;
-        } else {
-            numofHS = params->crossover.numHS;
-            for(int HS = 0; HS < numofHS ; HS++){
-                crossoverBegin[HS] =  params->crossover.begin[HS] * BLOCKLENGTH; // vector amb tots els begins (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
-                crossoverEnd[HS] =   params->crossover.end[HS] * BLOCKLENGTH; // vector amb tots els ends (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
-                crossoverFrac[0] =   params->crossover.frac[HS]; // vector amb tots els ends (he de sumar 1!!!)
-                correctArguments = 1;
-             }
-        }
-    */
-
-    if (params->crossover.isSC){
+    //if (params->crossover.isSC){
         //if (argc == 8){
             crossoverBegin[0] = BLOCKLENGTH;
             crossoverEnd[0] = 2*BLOCKLENGTH;
             correctArguments = 1;
         //}
-    }
+    //}
 
     /*else if (string(argv[8]) == "WR"){
         if (argc == 8){
