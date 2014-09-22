@@ -44,7 +44,7 @@ public:
         int MEPS;
     };
     struct hotspot{
-        double start;
+        double begin;
         double end;
         double rate;
 
@@ -52,9 +52,6 @@ public:
 
     struct param_crossover{
         float R;
-        bool isSC;
-        bool isWR;
-        bool isHS;
         int hotspots_number;
         hotspot hotspots[5];
     };

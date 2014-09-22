@@ -36,10 +36,23 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->m_button, SIGNAL(released()), this, SLOT(handleButton()));
     connect(ui->stop, SIGNAL(released()), this, SLOT(stop()));
     connect(ui->hotspots, SIGNAL(valueChanged(int)), this, SLOT(hotspots(int)));
+    connect(ui->R, SIGNAL(textChanged(const QString)), this, SLOT(changeR(const QString)));
     connect(ui->pushButton_dir, SIGNAL(released()), this, SLOT(dirButton()));
     connect(ui->fixlinearslider, SIGNAL(valueChanged(int)), this, SLOT(setFixLinearText(int)));
     connect(ui->fixlinearRadioButton, SIGNAL(toggled(bool)), this, SLOT(setFixLinearSliderVisible()));
     connect(ui->N, SIGNAL(textChanged(const QString)), this, SLOT(changeNdependecies(const QString)));
+    connect(this, SIGNAL(setMinimum(double,int)), this, SLOT(changeMinimum(double,int)));
+    connect(this, SIGNAL(setMaximum(double,int)), this, SLOT(changeMaximum(double,int)));
+    connect(ui->b1, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE1(double)));
+    connect(ui->e1, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE1(double)));
+    connect(ui->b2, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE2(double)));
+    connect(ui->e2, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE2(double)));
+    connect(ui->b3, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE3(double)));
+    connect(ui->e3, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE3(double)));
+    connect(ui->b4, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE4(double)));
+    connect(ui->e4, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE4(double)));
+    connect(ui->b5, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE5(double)));
+    connect(ui->e5, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE5(double)));
 
     //main window
     ui->id->setText("test-"+QDateTime::currentDateTime().toString("dd.MM.yyyy.hh.mm.ss"));
@@ -75,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->hot4->setVisible(false);
     ui->hot5->setVisible(false);
     ui->hotspots->setValue(1);
-    ui->rate1->setText("1");
+    ui->rate1->setValue(1.00);
 
     /*ui->R->setText("10");
     ui->C->setText("1");
@@ -88,32 +101,122 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
+void MainWindow::setMinimumE1(double value){
+    emit setMinimum(value,1);
+}
+void MainWindow::setMaximumE1(double value){
+    emit setMaximum(value,1);
+}
+void MainWindow::setMinimumE2(double value){
+    emit setMinimum(value,2);
+}
+void MainWindow::setMaximumE2(double value){
+    emit setMaximum(value,2);
+}
+void MainWindow::setMinimumE3(double value){
+    emit setMinimum(value,3);
+}
+void MainWindow::setMaximumE3(double value){
+    emit setMaximum(value,3);
+}
+void MainWindow::setMinimumE4(double value){
+    emit setMinimum(value,4);
+}
+void MainWindow::setMaximumE4(double value){
+    emit setMaximum(value,4);
+}
+void MainWindow::setMinimumE5(double value){
+    emit setMinimum(value,5);
+}
+void MainWindow::setMaximumE5(double value){
+    emit setMaximum(value,5);
+}
+void MainWindow::changeMinimum(double value, int item){
+    switch (item){
+        case 1:{
+            if(value<3)ui->e1->setMinimum(value+0.0001);
+            else ui->b1->setValue(ui->e1->value()-0.0001);
+            break;
+        }
+    case 2:{
+        if(value<3)ui->e2->setMinimum(value+0.0001);
+        else ui->b2->setValue(ui->e2->value()-0.0001);
+        break;
+    }
+    case 3:{
+        if(value<3)ui->e3->setMinimum(value+0.0001);
+        else ui->b3->setValue(ui->e3->value()-0.0001);
+        break;
+    }
+    case 4:{
+       if(value<3) ui->e4->setMinimum(value+0.0001);
+       else ui->b4->setValue(ui->e4->value()-0.0001);
+        break;
+    }
+    case 5:{
+        if(value<3)ui->e5->setMinimum(value+0.0001);
+        else ui->b5->setValue(ui->e5->value()-0.0001);
+        break;
+    }
+
+    }
+}
+void MainWindow::changeMaximum(double value, int item){
+    switch (item){
+        case 1:{
+            if(value>0)ui->b1->setMaximum(value-0.0001);
+            else ui->e1->setValue(ui->b1->value()+0.0001);
+            break;
+        }
+    case 2:{
+        if(value>0)ui->b2->setMaximum(value-0.0001);
+        else ui->e2->setValue(ui->b2->value()+0.0001);
+        break;
+    }
+    case 3:{
+        if(value>0)ui->b3->setMaximum(value-0.0001);
+        else ui->e3->setValue(ui->b3->value()+0.0001);
+        break;
+    }
+    case 4:{
+        if(value>0)ui->b4->setMaximum(value-0.0001);
+        else ui->e4->setValue(ui->b4->value()+0.0001);
+        break;
+    }
+    case 5:{
+        if(value>0)ui->b5->setMaximum(value-0.0001);
+        else ui->e5->setValue(ui->b5->value()+0.0001);
+        break;
+    }
+    }
+}
+
 void MainWindow::hotspots(int value){
     switch (value)
     {
         case 1:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(false);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
-            ui->rate1->setText("1");
+            ui->rate1->setValue(1);
             break;
         }
         case 2:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
-            ui->rate1->setText("0.5");ui->rate2->setText("0.5");
+            ui->rate1->setValue(0.5);ui->rate2->setValue(0.5);
             break;
         }
         case 3:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
-            ui->rate1->setText("0.33");ui->rate2->setText("0.33");ui->rate3->setText("0.34");
+            ui->rate1->setValue(0.33);ui->rate2->setValue(0.33);ui->rate3->setValue(0.34);
             break;
         }
         case 4:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(false);
-            ui->rate1->setText("0.25");ui->rate2->setText("0.25");ui->rate3->setText("0.25");ui->rate4->setText("0.25");
+            ui->rate1->setValue(0.25);ui->rate2->setValue(0.25);ui->rate3->setValue(0.25);ui->rate4->setValue(0.25);
             break;
         }
         case 5:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(true);
-            ui->rate1->setText("0.2");ui->rate2->setText("0.2");ui->rate3->setText("0.2");ui->rate4->setText("0.2");ui->rate5->setText("0.2");
+            ui->rate1->setValue(0.2);ui->rate2->setValue(0.2);ui->rate3->setValue(0.2);ui->rate4->setValue(0.2);ui->rate5->setValue(0.2);
             break;
         }
     }
@@ -169,29 +272,29 @@ bool MainWindow::checkRateHotSopts(){
     switch (ui->hotspots->value())
     {
         case 1:{
-            sumratiohots=ui->rate1->text().toDouble();
+            sumratiohots=ui->rate1->value();
             if(sumratiohots!=1) return false;
             break;
         }
         case 2:{
-            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble());
+            sumratiohots=(ui->rate1->value()+ui->rate2->value());
             if(sumratiohots!=1) return false;
             break;
         }
         case 3:{
-            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble());
+            sumratiohots=(ui->rate1->value()+ui->rate2->value()+ui->rate3->value());
             if(sumratiohots!=1) return false;
             break;
         }
         case 4:{
-            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble()+ui->rate4->text().toDouble());
+            sumratiohots=(ui->rate1->value()+ui->rate2->value()+ui->rate3->value()+ui->rate4->value());
             std::cout << double(sumratiohots)<<" "<<double(1) << std::endl;
             if(sumratiohots!=1) return false;
             break;
 
         }
         case 5:{
-            sumratiohots=(ui->rate1->text().toDouble()+ui->rate2->text().toDouble()+ui->rate3->text().toDouble()+ui->rate4->text().toDouble()+ui->rate4->text().toDouble());
+            sumratiohots=(ui->rate1->value()+ui->rate2->value()+ui->rate3->value()+ui->rate4->value()+ui->rate4->value());
             if(sumratiohots!=1) return false;
             break;
         }
@@ -254,6 +357,40 @@ void MainWindow::handleButton()
     params.igc.MEPS = ui->meps->text().toInt();
     //params crossover
     params.crossover.R = ui->R->text().toFloat();
+    if(params.crossover.R==float(0)){
+        params.crossover.hotspots_number = ui->hotspots->value();
+        for(int i=1; i<=params.crossover.hotspots_number;i++){
+            switch (i)
+            {
+                case 1:
+                params.crossover.hotspots[0].begin = ui->b1->value();
+                params.crossover.hotspots[0].end = ui->e1->value();
+                params.crossover.hotspots[0].rate = ui->rate1->value();
+                break;
+            case 2:
+            params.crossover.hotspots[1].begin = ui->b2->value();
+            params.crossover.hotspots[1].end = ui->e2->value();
+            params.crossover.hotspots[1].rate = ui->rate2->value();
+            break;
+            case 3:
+            params.crossover.hotspots[2].begin = ui->b3->value();
+            params.crossover.hotspots[2].end = ui->e3->value();
+            params.crossover.hotspots[2].rate = ui->rate3->value();
+            break;
+            case 4:
+            params.crossover.hotspots[3].begin = ui->b4->value();
+            params.crossover.hotspots[3].end = ui->e4->value();
+            params.crossover.hotspots[3].rate = ui->rate4->value();
+            break;
+            case 5:
+            params.crossover.hotspots[4].begin = ui->b5->value();
+            params.crossover.hotspots[4].end = ui->e5->value();
+            params.crossover.hotspots[4].rate = ui->rate5->value();
+            break;
+            }
+
+        }
+    }
 
 
 
@@ -379,4 +516,18 @@ void MainWindow::changeNdependecies(const QString &value){
     ui->fixlinearslider->setMaximum(20*(ui->N->text().toInt()));
     ui->fixlinearslider->setMinimum(1);
     ui->fixlinearslider->setValue(1*(value.toInt()));
+}
+
+void MainWindow::changeR(const QString &value){
+    /*if(value.compare("")==0){
+        ui->R->setText("0");
+    }*/
+    if(value.toInt()==0){
+        ui->frame_2->setVisible(true);
+        ui->groupBox_2->setVisible(true);
+    }else{
+        ui->frame_2->setVisible(false);
+        ui->groupBox_2->setVisible(false);
+    }
+
 }

@@ -1,24 +1,24 @@
 /*
- * File: main_Sedus_14_03_12.cpp
- * Author: Diego + Oriol + Marina
- * Date: 2014_03_12
- */
+* File: main_Sedus_14_09_19.cpp
+* Author: Diego + Oriol + Marina + JuanMa
+* Date: 2014_09_19
+*/
 
 /*ARGUMENTS:
- * SimulationID R C Supertime TimeToFixation SC/WR/HS
- * If timeToFixation=0, a random fixation trajectory is simulated for each run (av. time = 4N),
- * otherwise, timeToFixation indicates the speed of fixation (time = timeToFixation * N) and is
- * linear trajectory towards fixation
- */
+* SimulationID R C Supertime TimeToFixation SC/WR/HS
+* If timeToFixation=0, a random fixation trajectory is simulated for each run (av. time = 4N),
+* otherwise, timeToFixation indicates the speed of fixation (time = timeToFixation * N) and is
+* linear trajectory towards fixation
+*/
 
 
 /*CHANGES:
- * printing has been reduced to the minimum and statistics for whole block have been eliminated
- */
+* the new crossover function (joining SC/WR/HS) is now active
+*/
 
 /* PARTICULAR CHARACTERISTICS OF THIS MAIN
-  */
-//HOLA
+ */
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -73,7 +73,7 @@ float C = 0.5; // Population scaled gene conversion rate: C = 4N*kappa*lambda
 int numHS = 1; // Number of hotspots
 int crossoverBegin[maxNumOfHS]; // Start point of crossover regions
 int crossoverEnd[maxNumOfHS]; // End point of crossover regions
-
+float crossoverFrac[maxNumOfHS]; // Fraction of crossover events that fall in each crossover region
 
 string letter = ""; // Simulation ID
 string str;
@@ -195,7 +195,7 @@ void open_files(); // Opening files
 void close_files(); // Closing files
 
 void genealogy(float, int); // rho, 0/1(non structured or structured) //// Filling genealogy matrices in each PROMETHEUS
-void parentpicking(int[maxNumOfHS], int[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
+void parentpicking(int[maxNumOfHS], int[maxNumOfHS], float[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
 
 void duplication(int,int); // Create Duplication for eva (first duplicated chromosome)
 void mutation(float, int, int); // For each fertile chromosome decide if a mutation happens and execute it if necessary
@@ -488,7 +488,7 @@ struct sedus::prev_pres sedus::phaseI(){
                 if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
             }
             prom = t;
-            parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
+            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
             mutation(mu, i, pres);
         }
         // CALCULATE THE STATISTICS
@@ -534,7 +534,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                                     if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                             }
                             prom = t;
-                            parentpicking(crossoverBegin, crossoverEnd, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
+                            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
                             mutation(mu, i,pres);// MUTATION and CONVERSION (for each fertile chromosome)
                             conversion(kappa, i, pres, donorRatio);
                     }
@@ -566,7 +566,7 @@ void sedus::phaseIII(){
                             if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                         }
                         prom = t;
-                        parentpicking(crossoverBegin, crossoverEnd, numHS, prev,pres,i,t);
+                        parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
                         mutation(mu, i,pres);
                         conversion(kappa, i,pres, donorRatio);
                     }
@@ -769,99 +769,105 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
 ////  PARENTPICKING, DUPLICATION, MUTATION, CONVERSION  ////
 ////////////////////////////////////////////////////////////
 
-void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
+void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float fractionCross[maxNumOfHS], int numCrossRegions, int prev, int pres, int i, int t) {
     int j, k, junctionBlock, defHS, HS;
     int father, partner, junction, vald0, valr0, childblocks, minblock, recTract, end, beg;
     chrom * chr;
-    float p;
-    double num;
+    float p, num;
+    bool success;
 
     // PARENT-PICKING
-            father = ancestry[i][t];
-            // RECOMBINATION
-            if (recombimatrix[i][t] == true) {
-                childblocks = pointer[prev][father]->b;
-                if (ancestry[i][t] % 2 == 0) {
-                    partner = ancestry[i][t] + 1;
-                } else {
-                    partner = ancestry[i][t] - 1;
-                }
-                chr = pointer[pres][i];
-                chr->b = childblocks;
-                minblock = minim(pointer[prev][father]->b, pointer[prev][partner]->b);
-                //maxblock = maxim(pointer[prev][father][0].b, pointer[prev][partner][0].b);
-                p = rand() / ((float) RAND_MAX + 1);
-                defHS = 0;
-                for (HS = numCrossRegions; HS > 0; HS--) {
-                    num = HS;
-                    num /= numCrossRegions;
-                    if (p < num){
-                        defHS = HS-1;
+                father = ancestry[i][t];
+                // RECOMBINATION
+                if (recombimatrix[i][t] == true) {
+                    childblocks = pointer[prev][father]->b;
+                    if (ancestry[i][t] % 2 == 0) {
+                        partner = ancestry[i][t] + 1;
+                    } else {
+                        partner = ancestry[i][t] - 1;
                     }
-                }
-                end = crossEnd[defHS];
-                beg = crossBegin[defHS];
-                if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) > beg)) {
-                    end = minblock * BLOCKLENGTH;
-                }
-                if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {//LA SEGUNDA CONDICION ESTA IMPLCITA EN LA PRIMERA
-                    // If neither father and partner have mutations in any block
-                    if ((pointer[prev][father]->mpb[0] == 0) && (pointer[prev][father]->mpb[1] == 0) &&
-                        (pointer[prev][father]->mpb[2] == 0) && (pointer[prev][partner]->mpb[0] == 0) &&
-                        (pointer[prev][partner]->mpb[1] == 0) && (pointer[prev][partner]->mpb[2] == 0)) {
-                        for (j = 0; j < chr->b; j++) {
-                            chr->mpb[j] = 0;
+                    chr = pointer[pres][i];
+                    chr->b = childblocks;
+                    minblock = minim(pointer[prev][father]->b, pointer[prev][partner]->b);
+                    //maxblock = maxim(pointer[prev][father][0].b, pointer[prev][partner][0].b);
+                    p = rand() / ((float) RAND_MAX + 1);
+                    defHS = numCrossRegions-1;
+                    num = 1;
+                    HS = numCrossRegions-1;
+                    success = 0;
+                    while(HS >= 0 && success==0){
+                        num = num-fractionCross[HS];
+                        if (p < num){
+                            defHS = HS-1;
                         }
-                    }// If at least one of them have one or more mutations in one or more blocks
-                    else {
-
-                        recTract = end - beg;
-                        junction = (int) (rand() % (recTract));
-                        junction += beg;
-                        junctionBlock = (int) (junction / BLOCKLENGTH); // block where junction fell
-                        //       cout << junctionBlock << " ";
-                        valr0 = location(junction - junctionBlock*BLOCKLENGTH, prev, partner, junctionBlock); // junction location in the block "junctionBlock" of partner
-                        vald0 = location(junction - junctionBlock*BLOCKLENGTH, prev, father, junctionBlock); // junction location in the block "junctionBlock" of father
-
-                        //COPY THE INFO FROM PARTNER (BLOCK 0)
-                        for (j = 0; j < junctionBlock; j++) {
-                            chr->mpb[j] = pointer[prev][partner]->mpb[j];
-                            for (k = 0; k < pointer[prev][partner]->mpb[j]; k++) {
-                                chr->mutation[j][k] = pointer[prev][partner]->mutation[j][k];
-                            }
+                        else {
+                            success=1;
                         }
-
-                        //COPY INFO IN JUNCTION BLOCK (BLOCK 1)
-                        //FROM PARTNER
-                        for (k = 0; k < valr0; k++) {
-                            chr->mutation[junctionBlock][k] = pointer[prev][partner]->mutation[junctionBlock][k];
-                        }
-                        //FROM FATHER
-                        for (k = 0; k < (pointer[prev][father]->mpb[junctionBlock] - vald0); k++) {
-                            chr->mutation[junctionBlock][k + valr0] = pointer[prev][father]->mutation[junctionBlock][k + vald0];
-                        }
-                        //ESTABLISH MPB
-                        chr->mpb[junctionBlock] = valr0 + (pointer[prev][father]->mpb[junctionBlock] - vald0);
-
-                        //COPY INFO FROM BLOCK 2 IF PRESENT
-                        for (j = junctionBlock + 1; j < chr->b; j++) {
-                            if (j < pointer[prev][father]->b) { //j counts 0,1,2 but .b counts 1,2,3
-                                chr->mpb[j] = pointer[prev][father]->mpb[j];
-                                for (k = 0 ; k < pointer[prev][father]->mpb[j] ; k++) {
-                                    chr->mutation[j][k] = pointer[prev][father]->mutation[j][k];
-                                }
-                            } else {
+                        HS--;
+                    }
+                    end = crossEnd[defHS];
+                    beg = crossBegin[defHS];
+                    if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) > beg)) {
+                        end = minblock * BLOCKLENGTH;
+                    }
+                    if (((minblock * BLOCKLENGTH) >= end) && ((minblock * BLOCKLENGTH) > beg)) {
+                        // If neither father and partner have mutations in any block
+                        if ((pointer[prev][father]->mpb[0] == 0) && (pointer[prev][father]->mpb[1] == 0) &&
+                            (pointer[prev][father]->mpb[2] == 0) && (pointer[prev][partner]->mpb[0] == 0) &&
+                            (pointer[prev][partner]->mpb[1] == 0) && (pointer[prev][partner]->mpb[2] == 0)) {
+                            for (j = 0; j < chr->b; j++) {
                                 chr->mpb[j] = 0;
                             }
+                        }// If at least one of them have one or more mutations in one or more blocks
+                        else {
+
+                            recTract = end - beg;
+                            junction = (int) (rand() % (recTract));
+                            junction += beg;
+                            junctionBlock = (int) (junction / BLOCKLENGTH); // block where junction fell
+                            //       cout << junctionBlock << " ";
+                            valr0 = location(junction - junctionBlock*BLOCKLENGTH, prev, partner, junctionBlock); // junction location in the block "junctionBlock" of partner
+                            vald0 = location(junction - junctionBlock*BLOCKLENGTH, prev, father, junctionBlock); // junction location in the block "junctionBlock" of father
+
+                            //COPY THE INFO FROM PARTNER (BLOCK 0)
+                            for (j = 0; j < junctionBlock; j++) {
+                                chr->mpb[j] = pointer[prev][partner]->mpb[j];
+                                for (k = 0; k < pointer[prev][partner]->mpb[j]; k++) {
+                                    chr->mutation[j][k] = pointer[prev][partner]->mutation[j][k];
+                                }
+                            }
+
+                            //COPY INFO IN JUNCTION BLOCK (BLOCK 1)
+                            //FROM PARTNER
+                            for (k = 0; k < valr0; k++) {
+                                chr->mutation[junctionBlock][k] = pointer[prev][partner]->mutation[junctionBlock][k];
+                            }
+                            //FROM FATHER
+                            for (k = 0; k < (pointer[prev][father]->mpb[junctionBlock] - vald0); k++) {
+                                chr->mutation[junctionBlock][k + valr0] = pointer[prev][father]->mutation[junctionBlock][k + vald0];
+                            }
+                            //ESTABLISH MPB
+                            chr->mpb[junctionBlock] = valr0 + (pointer[prev][father]->mpb[junctionBlock] - vald0);
+
+                            //COPY INFO FROM BLOCK 2 IF PRESENT
+                            for (j = junctionBlock + 1; j < chr->b; j++) {
+                                if (j < pointer[prev][father]->b) { //j counts 0,1,2 but .b counts 1,2,3
+                                    chr->mpb[j] = pointer[prev][father]->mpb[j];
+                                    for (k = 0 ; k < pointer[prev][father]->mpb[j] ; k++) {
+                                        chr->mutation[j][k] = pointer[prev][father]->mutation[j][k];
+                                    }
+                                } else {
+                                    chr->mpb[j] = 0;
+                                }
+                            }
                         }
+                    } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {
+                         copychr(prev, father, pres, i);
                     }
-                } else if (((minblock * BLOCKLENGTH) < end) && ((minblock * BLOCKLENGTH) <= beg)) {//LA PRIMERA CONDICION ESTA IMPLICITA EN SEGUNDA
-                     copychr(prev, father, pres, i);
+                }// NO RECOMBINATION
+                else {
+                    copychr(prev, father, pres, i);
                 }
-            }// NO RECOMBINATION
-            else {
-                copychr(prev, father, pres, i);
-            }
 
 }
 
@@ -1914,8 +1920,8 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     //igc parameters
     meanTractLength=params->igc.lambda;
     numbptotalidentity=params->igc.MEPS;
-
     R = params->crossover.R;
+
     rho = R / (4 * N * BLOCKLENGTH);
     C= params->igc.C;
     kappa = C / (4 * N * meanTractLength);
@@ -1957,39 +1963,31 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     argc = argumentscount;
     correctArguments = 0;
     //if (params->crossover.isSC){
-        //if (argc == 8){
+        /*if (argc == 8){
             crossoverBegin[0] = BLOCKLENGTH;
             crossoverEnd[0] = 2*BLOCKLENGTH;
             correctArguments = 1;
-        //}
+            crossoverFrac[0] = 1;
+        }*/
     //}
 
-    /*else if (string(argv[8]) == "WR"){
-        if (argc == 8){
-            crossoverBegin[0] = 1;
-            crossoverEnd[0] = B*BLOCKLENGTH;
-            correctArguments = 1;
-        }
-    }
-    else if (string(argv[8]) == "HS"){
-        if (argc > 8){
-            //int num; sscanf (argv[7],"%d",&num);
-            int num=atoi(argv[7].c_str());
-            numHS = num;
-            if (argc == (8+numHS*2)){
-                correctArguments = 1;
-                for (int HS = 0; HS < numHS; HS++) {
-                    int Beg; int End;
-                    //sscanf (argv[8+HS*2],"%d",&Beg);
-                    //sscanf (argv[9+HS*2],"%d",&End);
-                    Beg=atoi(argv[8+HS*2].c_str());
-                    End=atoi(argv[9+HS*2].c_str());
-                    crossoverBegin[HS] = Beg;
-                    crossoverEnd[HS] = End;
-                }
-            }
-        }
-    }*/
+            /* HEM PENSAT QUE L'INPUT PODRIA ANAR MES O MENYS AIXI PERO NO N'ESTEM SEGURS*/
+                 int numofHS;
+                    if(R > 0){
+                        numofHS = 1;
+                        crossoverBegin[0] = BLOCKLENGTH;
+                        crossoverEnd[0] = 2*BLOCKLENGTH;
+                        crossoverFrac[0] = 1;
+                    } else {
+                        numofHS = params->crossover.hotspots_number;
+                        for(int HS = 0; HS < numofHS ; HS++){
+                            crossoverBegin[HS] =  params->crossover.hotspots[HS].begin * BLOCKLENGTH; // vector amb tots els begins (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
+                            crossoverEnd[HS] =   params->crossover.hotspots[HS].end * BLOCKLENGTH; // vector amb tots els ends (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
+                            crossoverFrac[HS] =   params->crossover.hotspots[HS].rate; // vector amb tots els ends (he de sumar 1!!!)
+                         }
+                    }
+                   correctArguments = 1;
+
 }
 
 

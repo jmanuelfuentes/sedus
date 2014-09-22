@@ -6,6 +6,8 @@
 
 QT       += core gui
 
+QXT = core
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = sedus
@@ -21,8 +23,7 @@ HEADERS  += mainwindow.h \
     sedus.h \
     qcustomplot.h
 
-FORMS    += mainwindow.ui \
-    mainwindowOLD.ui
+FORMS    += mainwindow.ui
 
 OTHER_FILES += \
     pi_02_toFile_Sample.R
