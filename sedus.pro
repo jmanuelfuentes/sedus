@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-QXT = core
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -26,7 +26,13 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 OTHER_FILES += \
-    pi_02_toFile_Sample.R
+    pi_02_toFile_Sample.R \
+    img/gnome-fs-directory-accept.png \
+    img/header.png \
+    img/logo_sedus.png \
+    img/splash.png \
+    img/start_64.png \
+    img/stop.png
 
 QMAKE_CXXFLAGS += -std=c++11
 

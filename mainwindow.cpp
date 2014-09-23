@@ -357,7 +357,7 @@ void MainWindow::handleButton()
     params.igc.MEPS = ui->meps->text().toInt();
     //params crossover
     params.crossover.R = ui->R->text().toFloat();
-    if(params.crossover.R==float(0)){
+    if(params.crossover.R!=float(0)){
         params.crossover.hotspots_number = ui->hotspots->value();
         for(int i=1; i<=params.crossover.hotspots_number;i++){
             switch (i)
@@ -423,10 +423,10 @@ void MainWindow::handleButton()
     ui->customPlot->addGraph();
     ui->customPlot->graph(2)->setName("Duplicated");
     ui->customPlot->graph(2)->setPen(QPen(QColor(1,0,1)));
-    ui->customPlot->addGraph();
+    /*ui->customPlot->addGraph();
     ui->customPlot->graph(3)->setName("O+D");
     ui->customPlot->graph(3)->setPen(QPen(Qt::blue));
-
+    */
     ui->customPlot->xAxis2->setVisible(true);
     ui->customPlot->xAxis2->setTickLabels(false);
     ui->customPlot->yAxis2->setVisible(true);
@@ -471,7 +471,7 @@ void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
     ui->customPlot->graph(0)->setData(x[0], y[0]);
     ui->customPlot->graph(1)->setData(x[1], y[1]);
     ui->customPlot->graph(2)->setData(x[2], y[2]);
-    ui->customPlot->graph(3)->setData(x[3], y[3]);
+    //ui->customPlot->graph(3)->setData(x[3], y[3]);
     ui->customPlot->replot();
 }
 void MainWindow::setLog(const QString &value){
@@ -522,7 +522,7 @@ void MainWindow::changeR(const QString &value){
     /*if(value.compare("")==0){
         ui->R->setText("0");
     }*/
-    if(value.toInt()==0){
+    if(value.toInt()!=0){
         ui->frame_2->setVisible(true);
         ui->groupBox_2->setVisible(true);
     }else{

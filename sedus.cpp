@@ -1912,7 +1912,11 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     N = params->main.N;
     THETA = params->main.theta;
     BLOCKLENGTH = params->main.blocklenght;
-    timeToFixation=params->main.fixation_linear;
+    if(params->main.israndom){
+        timeToFixation=0;
+    }else{
+        timeToFixation=params->main.fixation_linear;
+    }
     TIMELENGTH = params->main.total * N; // Total number of generations (including all phases)
     BURNIN = params->main.burnin * N; // Number of generations in phase I
     STRUCTURED = (int) 20 * N; // Number of generations in phase II
@@ -1972,15 +1976,15 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     //}
 
             /* HEM PENSAT QUE L'INPUT PODRIA ANAR MES O MENYS AIXI PERO NO N'ESTEM SEGURS*/
-                 int numofHS;
-                    if(R > 0){
-                        numofHS = 1;
+
+                    if(R == 0){
+                        numHS = 1;
                         crossoverBegin[0] = BLOCKLENGTH;
                         crossoverEnd[0] = 2*BLOCKLENGTH;
                         crossoverFrac[0] = 1;
                     } else {
-                        numofHS = params->crossover.hotspots_number;
-                        for(int HS = 0; HS < numofHS ; HS++){
+                        numHS = params->crossover.hotspots_number;
+                        for(int HS = 0; HS < numHS ; HS++){
                             crossoverBegin[HS] =  params->crossover.hotspots[HS].begin * BLOCKLENGTH; // vector amb tots els begins (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
                             crossoverEnd[HS] =   params->crossover.hotspots[HS].end * BLOCKLENGTH; // vector amb tots els ends (l'usuari entra float de 0 a 3 pero després es multiplica per blocklength i acaba sent integrer)
                             crossoverFrac[HS] =   params->crossover.hotspots[HS].rate; // vector amb tots els ends (he de sumar 1!!!)
