@@ -212,7 +212,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <property name="usesScrollButtons">
      <bool>true</bool>
@@ -497,7 +497,7 @@
           <x>169</x>
           <y>80</y>
           <width>241</width>
-          <height>31</height>
+          <height>41</height>
          </rect>
         </property>
         <property name="title">
@@ -553,19 +553,19 @@
           <string/>
          </property>
         </widget>
-       </widget>
-       <widget class="QLabel" name="label_22">
-        <property name="geometry">
-         <rect>
-          <x>220</x>
-          <y>120</y>
-          <width>91</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>1 ≤ x ≤ 20N</string>
-        </property>
+        <widget class="QLabel" name="label_22">
+         <property name="geometry">
+          <rect>
+           <x>50</x>
+           <y>20</y>
+           <width>91</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>1 ≤ x ≤ 20N</string>
+         </property>
+        </widget>
        </widget>
       </widget>
      </widget>
