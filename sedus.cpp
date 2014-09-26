@@ -1917,8 +1917,8 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     }else{
         timeToFixation=params->main.fixation_linear;
     }
-    TIMELENGTH = params->main.total * N; // Total number of generations (including all phases)
-    BURNIN = params->main.burnin * N; // Number of generations in phase I
+    TIMELENGTH = params->main.total; // Total number of generations (including all phases)
+    BURNIN = params->main.burnin; // Number of generations in phase I
     STRUCTURED = (int) 20 * N; // Number of generations in phase II
 
     //igc parameters

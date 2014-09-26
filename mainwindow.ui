@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1152</width>
+    <width>1244</width>
     <height>704</height>
    </rect>
   </property>
@@ -212,7 +212,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <property name="usesScrollButtons">
      <bool>true</bool>
@@ -257,13 +257,16 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>90</y>
-        <width>81</width>
-        <height>17</height>
+        <y>80</y>
+        <width>91</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>Sample size:</string>
+       <string>Sample size (in individuals):</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QLabel" name="label_5">
@@ -276,7 +279,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Generations between snap-shots:</string>
+       <string>Generations between snapshots:</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -324,13 +327,13 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>70</y>
-        <width>141</width>
-        <height>51</height>
+        <y>60</y>
+        <width>261</width>
+        <height>61</height>
        </rect>
       </property>
       <property name="text">
-       <string>Population-scaled point mutation rate (θ):</string>
+       <string>Point mutation rate per site per generation                  (population-scaled, θ = 4Nμ):</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -341,18 +344,18 @@
        <rect>
         <x>20</x>
         <y>140</y>
-        <width>81</width>
+        <width>131</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
-       <string>Blocklength:</string>
+       <string>Block length (in bp):</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="N">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>300</x>
         <y>30</y>
         <width>113</width>
         <height>21</height>
@@ -362,7 +365,7 @@
      <widget class="QLineEdit" name="theta">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>300</x>
         <y>80</y>
         <width>113</width>
         <height>21</height>
@@ -372,7 +375,7 @@
      <widget class="QLineEdit" name="blocklength">
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>300</x>
         <y>140</y>
         <width>113</width>
         <height>21</height>
@@ -389,7 +392,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Timelength (in generations)</string>
+       <string>Phase lengths (in generations)</string>
       </property>
       <widget class="QFrame" name="frame">
        <property name="geometry">
@@ -397,7 +400,7 @@
          <x>0</x>
          <y>20</y>
          <width>431</width>
-         <height>141</height>
+         <height>151</height>
         </rect>
        </property>
        <property name="frameShape">
@@ -411,66 +414,49 @@
          <rect>
           <x>10</x>
           <y>10</y>
-          <width>67</width>
+          <width>191</width>
           <height>17</height>
          </rect>
         </property>
         <property name="text">
-         <string>Burn-in/N:</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="burnin">
-        <property name="geometry">
-         <rect>
-          <x>80</x>
-          <y>10</y>
-          <width>113</width>
-          <height>21</height>
-         </rect>
+         <string>Burn-in (Phase I):</string>
         </property>
        </widget>
        <widget class="QLabel" name="total_label">
         <property name="geometry">
          <rect>
-          <x>210</x>
-          <y>10</y>
-          <width>51</width>
+          <x>10</x>
+          <y>120</y>
+          <width>151</width>
           <height>17</height>
          </rect>
         </property>
         <property name="text">
-         <string>Total/N:</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="total">
-        <property name="geometry">
-         <rect>
-          <x>260</x>
-          <y>10</y>
-          <width>113</width>
-          <height>21</height>
-         </rect>
+         <string>Total (Phases I+II+III):</string>
         </property>
        </widget>
        <widget class="QLabel" name="label_12">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>60</y>
-          <width>67</width>
-          <height>17</height>
+          <y>46</y>
+          <width>131</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
-         <string>Fixation:</string>
+         <string>Structured (Phase II):</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
        <widget class="QRadioButton" name="radioButton">
         <property name="geometry">
          <rect>
-          <x>80</x>
+          <x>160</x>
           <y>50</y>
-          <width>117</width>
+          <width>81</width>
           <height>22</height>
          </rect>
         </property>
@@ -481,9 +467,9 @@
        <widget class="QRadioButton" name="fixlinearRadioButton">
         <property name="geometry">
          <rect>
-          <x>80</x>
-          <y>80</y>
-          <width>117</width>
+          <x>160</x>
+          <y>70</y>
+          <width>71</width>
           <height>22</height>
          </rect>
         </property>
@@ -494,9 +480,9 @@
        <widget class="QGroupBox" name="fixgroupslider">
         <property name="geometry">
          <rect>
-          <x>169</x>
-          <y>80</y>
-          <width>241</width>
+          <x>240</x>
+          <y>70</y>
+          <width>221</width>
           <height>41</height>
          </rect>
         </property>
@@ -508,7 +494,7 @@
           <rect>
            <x>10</x>
            <y>0</y>
-           <width>171</width>
+           <width>121</width>
            <height>29</height>
           </rect>
          </property>
@@ -534,10 +520,23 @@
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
+        <widget class="QLabel" name="label_22">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>20</y>
+           <width>91</width>
+           <height>17</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>1 ≤ x ≤ 20N</string>
+         </property>
+        </widget>
         <widget class="QLabel" name="fixlinearlabel">
          <property name="geometry">
           <rect>
-           <x>190</x>
+           <x>130</x>
            <y>0</y>
            <width>41</width>
            <height>31</height>
@@ -553,20 +552,70 @@
           <string/>
          </property>
         </widget>
-        <widget class="QLabel" name="label_22">
-         <property name="geometry">
-          <rect>
-           <x>50</x>
-           <y>20</y>
-           <width>91</width>
-           <height>17</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>1 ≤ x ≤ 20N</string>
-         </property>
-        </widget>
        </widget>
+       <widget class="QSlider" name="burnin_slider">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>10</y>
+          <width>111</width>
+          <height>29</height>
+         </rect>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QSlider" name="total_slider">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>120</y>
+          <width>111</width>
+          <height>29</height>
+         </rect>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="burnin_label">
+        <property name="geometry">
+         <rect>
+          <x>300</x>
+          <y>10</y>
+          <width>67</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QLabel" name="total_label_2">
+        <property name="geometry">
+         <rect>
+          <x>280</x>
+          <y>120</y>
+          <width>67</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <zorder>label_10</zorder>
+       <zorder>total_label</zorder>
+       <zorder>label_12</zorder>
+       <zorder>radioButton</zorder>
+       <zorder>fixlinearRadioButton</zorder>
+       <zorder>fixgroupslider</zorder>
+       <zorder>fixlinearslider</zorder>
+       <zorder>burnin_slider</zorder>
+       <zorder>total_slider</zorder>
+       <zorder>burnin_label</zorder>
+       <zorder>total_label_2</zorder>
       </widget>
      </widget>
     </widget>
@@ -579,12 +628,12 @@
        <rect>
         <x>20</x>
         <y>30</y>
-        <width>181</width>
-        <height>31</height>
+        <width>211</width>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>C (Populated-scaled interlocus gene conversion):</string>
+       <string>C (Population-scaled interlocus gene conversion rate, C = 4Ngλ):</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -595,12 +644,12 @@
        <rect>
         <x>20</x>
         <y>90</y>
-        <width>141</width>
+        <width>201</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
-       <string>λ (Mean tract length):</string>
+       <string>λ (Mean tract length in bp):</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_15">
@@ -613,7 +662,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Donor acceptor bias:</string>
+       <string>Donor-acceptor bias:</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_16">
@@ -621,12 +670,12 @@
        <rect>
         <x>20</x>
         <y>170</y>
-        <width>171</width>
+        <width>221</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>MEPS length (Minimal efficient processing length):</string>
+       <string>MEPS length (Minimum efficient processing segment length):</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -635,8 +684,8 @@
      <widget class="QLineEdit" name="C">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>40</y>
+        <x>260</x>
+        <y>50</y>
         <width>113</width>
         <height>21</height>
        </rect>
@@ -645,8 +694,8 @@
      <widget class="QLineEdit" name="lambda">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>80</y>
+        <x>260</x>
+        <y>90</y>
         <width>113</width>
         <height>21</height>
        </rect>
@@ -655,8 +704,8 @@
      <widget class="QLineEdit" name="donor">
       <property name="geometry">
        <rect>
-        <x>230</x>
-        <y>126</y>
+        <x>260</x>
+        <y>130</y>
         <width>113</width>
         <height>21</height>
        </rect>
@@ -665,7 +714,7 @@
      <widget class="QLineEdit" name="meps">
       <property name="geometry">
        <rect>
-        <x>230</x>
+        <x>260</x>
         <y>180</y>
         <width>113</width>
         <height>21</height>
@@ -682,18 +731,18 @@
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>271</width>
+        <width>321</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
-       <string>R (Population-scaled allelic crossover rate):</string>
+       <string>R (Population-scaled allelic crossover rate, R = 4Nr):</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="R">
       <property name="geometry">
        <rect>
-        <x>290</x>
+        <x>340</x>
         <y>20</y>
         <width>113</width>
         <height>21</height>
@@ -726,12 +775,12 @@
        </rect>
       </property>
       <property name="title">
-       <string>HotSpot:</string>
+       <string>Number of crossover regions: </string>
       </property>
       <widget class="QSpinBox" name="hotspots">
        <property name="geometry">
         <rect>
-         <x>60</x>
+         <x>190</x>
          <y>0</y>
          <width>48</width>
          <height>27</height>
@@ -754,7 +803,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>begin</string>
+        <string>Start</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_19">
@@ -767,7 +816,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>end</string>
+        <string>End</string>
        </property>
       </widget>
       <widget class="QLabel" name="label_11">
@@ -793,7 +842,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>ratio</string>
+        <string>Ratio</string>
        </property>
       </widget>
       <widget class="QFrame" name="hot1">

@@ -36,8 +36,11 @@ private slots:
     void setBar(int value);
     void setChart(const qvdouble &x,const qvdouble &y);
     void setFixLinearText(int value);
+    void setBurnin(int value);
+    void setTotal(int value);
     void setFixLinearSliderVisible();
     void changeNdependecies(const QString &value);
+    void changeGenerationsDependecies(const QString &value);
     void changeR(const QString &value);
     void quitWork();
     void hotspots(int value);

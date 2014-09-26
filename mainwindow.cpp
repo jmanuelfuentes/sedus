@@ -39,8 +39,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->R, SIGNAL(textChanged(const QString)), this, SLOT(changeR(const QString)));
     connect(ui->pushButton_dir, SIGNAL(released()), this, SLOT(dirButton()));
     connect(ui->fixlinearslider, SIGNAL(valueChanged(int)), this, SLOT(setFixLinearText(int)));
+    connect(ui->burnin_slider, SIGNAL(valueChanged(int)), this, SLOT(setBurnin(int)));
+    connect(ui->total_slider, SIGNAL(valueChanged(int)), this, SLOT(setTotal(int)));
     connect(ui->fixlinearRadioButton, SIGNAL(toggled(bool)), this, SLOT(setFixLinearSliderVisible()));
     connect(ui->N, SIGNAL(textChanged(const QString)), this, SLOT(changeNdependecies(const QString)));
+    connect(ui->generations, SIGNAL(textChanged(const QString)), this, SLOT(changeGenerationsDependecies(const QString)));
     connect(this, SIGNAL(setMinimum(double,int)), this, SLOT(changeMinimum(double,int)));
     connect(this, SIGNAL(setMaximum(double,int)), this, SLOT(changeMaximum(double,int)));
     connect(ui->b1, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE1(double)));
@@ -71,8 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fixlinearRadioButton->setChecked(true);
     ui->theta->setText("0.001");
     ui->blocklength->setText("5000");
-    ui->burnin->setText("30");
-    ui->total->setText("130");
+
 
     //params igc
     ui->lambda->setText("100");
@@ -81,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->donor->setText("0.5");
 
     //params crossover
-    ui->R->setText("10");
+    ui->R->setText("1");
     ui->hot1->setVisible(true);
     ui->hot2->setVisible(false);
     ui->hot3->setVisible(false);
@@ -342,8 +344,8 @@ void MainWindow::handleButton()
     params.main.N = ui->N->text().toInt();
     params.main.theta = ui->theta->text().toDouble();
     params.main.blocklenght = ui->blocklength->text().toInt();
-    params.main.burnin = ui->burnin->text().toInt();
-    params.main.total = ui->total->text().toInt();
+    params.main.burnin = ui->burnin_slider->value();
+    params.main.total = ui->total_slider->value();
     if(ui->fixlinearRadioButton->isChecked()){
         params.main.israndom = false;
         params.main.fixation_linear = ui->fixlinearlabel->text().toFloat();
@@ -502,6 +504,16 @@ void MainWindow::setFixLinearText(int value){
     ui->fixlinearlabel->setText(QString::number(value));
 }
 
+void MainWindow::setBurnin(int value){
+    ui->burnin_label->setText(QString::number(value));
+    ui->total_slider->setMinimum(ui->burnin_slider->value()+20*ui->N->text().toInt());
+    ui->total_slider->setMaximum(ui->N->text().toInt()*1000);
+}
+
+void MainWindow::setTotal(int value){
+    ui->total_label_2->setText(QString::number(value));
+}
+
 void MainWindow::setFixLinearSliderVisible(){
     if (ui->fixlinearRadioButton->isChecked()){
         ui->fixlinearslider->setMaximum(20*(ui->N->text().toInt()));
@@ -516,6 +528,31 @@ void MainWindow::changeNdependecies(const QString &value){
     ui->fixlinearslider->setMaximum(20*(ui->N->text().toInt()));
     ui->fixlinearslider->setMinimum(1);
     ui->fixlinearslider->setValue(1*(value.toInt()));
+
+    //ui->burnin_slider->setMaximum(50*(ui->N->text().toInt()));
+    ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
+    ui->burnin_slider->setMinimum(ui->generations->text().toInt());
+    ui->burnin_slider->setValue(30*(value.toInt()));
+    ui->burnin_slider->setSingleStep(ui->generations->text().toInt());
+
+    //ui->total_slider->setMaximum(1000*(ui->N->text().toInt()));
+    ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
+    ui->total_slider->setMinimum(ui->burnin_slider->value()+20*ui->N->text().toInt());
+    ui->total_slider->setValue(130*(value.toInt()));
+    ui->total_slider->setSingleStep(ui->generations->text().toInt());
+}
+void MainWindow::changeGenerationsDependecies(const QString &value){
+    if(value.toInt()>0){
+        ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->burnin_slider->setMinimum(value.toInt());
+        ui->burnin_slider->setSingleStep(value.toInt());
+        ui->burnin_slider->setValue((30*(ui->N->text().toInt()))-(30*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(1000*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->total_slider->setSingleStep(value.toInt());
+        ui->total_slider->setValue((130*(ui->N->text().toInt()))-(130*(ui->N->text().toInt())%ui->generations->text().toInt()));
+    }else{
+        //ui->generations->setText("1000");
+    }
 }
 
 void MainWindow::changeR(const QString &value){
