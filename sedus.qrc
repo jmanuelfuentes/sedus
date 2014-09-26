@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/start_64.png</file>
+        <file>img/gnome-fs-directory-accept.png</file>
+        <file>img/header.png</file>
+        <file>img/logo_sedus.png</file>
+        <file>img/splash.png</file>
+        <file>img/stop.png</file>
+    </qresource>
+</RCC>

@@ -5,7 +5,10 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    QPixmap pixmap("./img/splash.png");
+    #ifndef __APPLE__
+        a.setWindowIcon(QIcon(":/img/sedus.ico"));
+    #endif
+    QPixmap pixmap(":/img/splash.png");
     QSplashScreen splash(pixmap);
     splash.show();
     splash.showMessage(QObject::tr("Initiating SEDUS..."),

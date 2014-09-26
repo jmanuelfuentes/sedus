@@ -42,7 +42,7 @@
      <enum>Qt::PlainText</enum>
     </property>
     <property name="pixmap">
-     <pixmap>img/header.png</pixmap>
+     <pixmap resource="sedus.qrc">:/img/header.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>
@@ -61,8 +61,8 @@
      <string>RUN!</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>img/start_64.png</normaloff>img/start_64.png</iconset>
+     <iconset resource="sedus.qrc">
+      <normaloff>:/img/start_64.png</normaloff>:/img/start_64.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -137,8 +137,8 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset>
-         <normaloff>img/gnome-fs-directory-accept.png</normaloff>img/gnome-fs-directory-accept.png</iconset>
+        <iconset resource="sedus.qrc">
+         <normaloff>:/img/gnome-fs-directory-accept.png</normaloff>:/img/gnome-fs-directory-accept.png</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -1288,8 +1288,8 @@
      <string>STOP</string>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>img/stop.png</normaloff>img/stop.png</iconset>
+     <iconset resource="sedus.qrc">
+      <normaloff>:/img/stop.png</normaloff>:/img/stop.png</iconset>
     </property>
     <property name="iconSize">
      <size>
@@ -1319,6 +1319,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="sedus.qrc"/>
+ </resources>
  <connections/>
 </ui>
