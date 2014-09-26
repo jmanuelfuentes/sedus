@@ -32,7 +32,8 @@ OTHER_FILES += \
     img/logo_sedus.png \
     img/splash.png \
     img/start_64.png \
-    img/stop.png
+    img/stop.png \
+    img/sedus.ico
 
 QMAKE_CXXFLAGS += -std=c++11
 

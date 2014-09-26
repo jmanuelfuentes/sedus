@@ -6,5 +6,6 @@
         <file>img/logo_sedus.png</file>
         <file>img/splash.png</file>
         <file>img/stop.png</file>
+        <file>img/sedus.ico</file>
     </qresource>
 </RCC>
