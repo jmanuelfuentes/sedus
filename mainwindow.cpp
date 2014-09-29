@@ -1,3 +1,34 @@
+/***************************************************************************
+**                                                                        **
+**  SEDUS, Segmental Duplication Simulator                                **
+**  Copyright (C) 2014 Diego A. Hartasánchez,Oriol Vallès-Codina,         **
+**  Marina Brasó-Vives, Juan Manuel Fuentes and Arcadi Navarro,           **
+**  Institut de Biologia Evolutiva UPF-CSIC                               **
+**                                                                        **
+**  This file is part of SEDUS.                                           **
+**                                                                        **
+**  SEDUS is free software: you can redistribute it and/or modify         **
+**  it under the terms of the GNU General Public License as published by  **
+**  the Free Software Foundation, either version 3 of the License, or     **
+**  (at your option) any later version.                                   **
+**                                                                        **
+**  SEDUS is distributed in the hope that it will be useful,              **
+**  but WITHOUT ANY WARRANTY; without even the implied warranty of        **
+**  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         **
+**  GNU General Public License for more details.                          **
+**                                                                        **
+**  You should have received a copy of the GNU General Public License     **
+**  along with this program.  If not, see http://www.gnu.org/licenses/.   **
+**                                                                        **
+****************************************************************************
+**           Authors: Diego A. Hartasánchez,Oriol Vallès-Codina,          **
+**                   Marina Brasó-Vives, Juan Manuel Fuentes              **
+**                   and Arcadi Navarro                                   **
+**  Website/Contact: http://www.biologiaevolutiva.org/sedus/              **
+**             Date: 01.10.14                                             **
+**          Version: 1.10                                                 **
+****************************************************************************/
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QDesktopWidget>
@@ -270,6 +301,14 @@ void MainWindow::dirButton()
    ui->dir->setText(dir);
 }
 
+bool MainWindow::checkGenerations(){
+
+    if(!(ui->generations->text().toInt()<=ui->N->text().toInt()))return false;
+    if(!(ui->generations->text().toInt()%2==0))return false;
+    if(!(ui->N->text().toInt()%ui->generations->text().toInt())==0)return false;
+    return true;
+}
+
 bool MainWindow::checkRateHotSopts(){
     switch (ui->hotspots->value())
     {
@@ -312,10 +351,15 @@ void MainWindow::handleButton()
     qRegisterMetaType<qvdouble>("qvdouble");
 
     //CHECKS
+    if(!checkGenerations()){
+        QMessageBox::information(this, tr("ERROR GENERATIONS"), "Generations between snapshots must be minor or equal and divisor of \"Population size (N)\", as well as even number.");
+        return;
+    }
     if(!checkRateHotSopts()){
         QMessageBox::information(this, tr("ERROR HOTSPOTS"), "The sum of  the all hotspots ratio must be one. (Current sum: "+QString::number(sumratiohots)+")");
         return;
     }
+
 
     if(!ui->progressBar->isVisible()){
         ui->progressBar->setMaximum(100);

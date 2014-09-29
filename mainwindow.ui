@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1244</width>
+    <width>1144</width>
     <height>704</height>
    </rect>
   </property>
@@ -212,7 +212,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <property name="usesScrollButtons">
      <bool>true</bool>
@@ -605,17 +605,6 @@
          <string/>
         </property>
        </widget>
-       <zorder>label_10</zorder>
-       <zorder>total_label</zorder>
-       <zorder>label_12</zorder>
-       <zorder>radioButton</zorder>
-       <zorder>fixlinearRadioButton</zorder>
-       <zorder>fixgroupslider</zorder>
-       <zorder>fixlinearslider</zorder>
-       <zorder>burnin_slider</zorder>
-       <zorder>total_slider</zorder>
-       <zorder>burnin_label</zorder>
-       <zorder>total_label_2</zorder>
       </widget>
      </widget>
     </widget>
