@@ -417,14 +417,14 @@ void MainWindow::handleButton()
     ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop);
     ui->customPlot->addGraph();
     ui->customPlot->graph(0)->setName("Original");
-    ui->customPlot->graph(0)->setPen(QPen(Qt::darkGreen));
+    ui->customPlot->graph(0)->setPen(QPen(QColor(26,30,178)));
     //ui->customPlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
     ui->customPlot->addGraph();
     ui->customPlot->graph(1)->setName("Single-copy");
-    ui->customPlot->graph(1)->setPen(QPen(Qt::red));
+    ui->customPlot->graph(1)->setPen(QPen(QColor(255,124,0)));
     ui->customPlot->addGraph();
     ui->customPlot->graph(2)->setName("Duplicated");
-    ui->customPlot->graph(2)->setPen(QPen(QColor(1,0,1)));
+    ui->customPlot->graph(2)->setPen(QPen(QColor(62,148,209)));
     /*ui->customPlot->addGraph();
     ui->customPlot->graph(3)->setName("O+D");
     ui->customPlot->graph(3)->setPen(QPen(Qt::blue));
@@ -470,6 +470,8 @@ void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->generations->text().toInt())/1000);
     ui->customPlot->yAxis->setRange(0, 15);
+    ui->customPlot->xAxis->setLabel("Thousands of generations");
+    ui->customPlot->yAxis->setLabel("Average pairwise differences");
     ui->customPlot->graph(0)->setData(x[0], y[0]);
     ui->customPlot->graph(1)->setData(x[1], y[1]);
     ui->customPlot->graph(2)->setData(x[2], y[2]);
