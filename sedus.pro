@@ -32,15 +32,16 @@ OTHER_FILES += \
     img/logo_sedus.png \
     img/splash.png \
     img/start_64.png \
-    img/stop.png
+    img/stop.png \
+    img/sedus.ico
 
 QMAKE_CXXFLAGS += -std=c++11
 
-copydata.commands = $(COPY_DIR) $$PWD/img $$OUT_PWD
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+#copydata.commands = $(COPY_DIR) $$PWD/img $$OUT_PWD
+#first.depends = $(first) copydata
+#export(first.depends)
+#export(copydata.commands)
+#QMAKE_EXTRA_TARGETS += first copydata
 
 RESOURCES += \
     sedus.qrc
