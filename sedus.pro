@@ -37,11 +37,11 @@ OTHER_FILES += \
 
 QMAKE_CXXFLAGS += -std=c++11
 
-copydata.commands = $(COPY_DIR) $$PWD/img $$OUT_PWD
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+#copydata.commands = $(COPY_DIR) $$PWD/img $$OUT_PWD
+#first.depends = $(first) copydata
+#export(first.depends)
+#export(copydata.commands)
+#QMAKE_EXTRA_TARGETS += first copydata
 
 RESOURCES += \
     sedus.qrc
