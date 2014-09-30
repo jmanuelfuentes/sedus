@@ -111,7 +111,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lambda->setText("100");
     ui->meps->setText("0");
     ui->C->setText("1");
-    ui->donor->setText("0.5");
+    //ui->donor->setText("0.5");
+    ui->donor_spin->setValue(0.5);
 
     //params crossover
     ui->R->setText("1");
@@ -398,7 +399,8 @@ void MainWindow::handleButton()
     }
     //params igc
     params.igc.C = ui->C->text().toFloat();
-    params.igc.donor = ui->donor->text().toFloat();
+    //params.igc.donor = ui->donor->text().toFloat();
+    params.igc.donor = ui->donor_spin->value();
     params.igc.lambda = ui->lambda->text().toInt();
     params.igc.MEPS = ui->meps->text().toInt();
     //params crossover
@@ -513,7 +515,7 @@ void MainWindow::handleButton()
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->generations->text().toInt())/1000);
-    ui->customPlot->yAxis->setRange(0, 15);
+    ui->customPlot->yAxis->setRange(0, 14);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
     ui->customPlot->yAxis->setLabel("Average pairwise differences");
     ui->customPlot->graph(0)->setData(x[0], y[0]);
