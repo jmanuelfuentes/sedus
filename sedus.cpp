@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  SEDUS, Segmental Duplication Simulator                                **
-**  Copyright (C) 2014 Diego A. Hartasánchez,Oriol Vallès-Codina,         **
+**  Copyright (C) 2014 Diego A. Hartasánchez, Oriol Vallès-Codina,        **
 **  Marina Brasó-Vives, Juan Manuel Fuentes and Arcadi Navarro,           **
 **  Institut de Biologia Evolutiva UPF-CSIC                               **
 **                                                                        **
@@ -21,7 +21,7 @@
 **  along with this program.  If not, see http://www.gnu.org/licenses/.   **
 **                                                                        **
 ****************************************************************************
-**           Authors: Diego A. Hartasánchez,Oriol Vallès-Codina,          **
+**           Authors: Diego A. Hartasánchez, Oriol Vallès-Codina,         **
 **                   Marina Brasó-Vives, Juan Manuel Fuentes              **
 **                   and Arcadi Navarro                                   **
 **  Website/Contact: http://www.biologiaevolutiva.org/sedus/              **
@@ -67,7 +67,6 @@ int BLOCKLENGTH = 5000; // Block length
 int SAMPLE = 50; // Sample size
 #define MUTTABLESIZE 1000000 // Maximum number of mutations (size of muttable)
 #define B 3 // Maximum number of blocks per chromosome
-#define BIGTIME 130 // BIGTIME * N is the total number of generations simulated per run
 #define numOfBins 5 // Number of segments in which we divide each block (exclusively used for analysis)
 #define maxNumOfHS 10  // Maximum number of crossover hotspots
 #define numofsamples 1 // Number of different samples taken per run
@@ -77,7 +76,7 @@ int BURNIN; // Number of generations in phase I
 int STRUCTURED; // Number of generations in phase II
 
 float THETA = 0.001; // Population scaled mutation rate: THETA = 4 N mu
-float R = 10; // Population scaled crossover rate: R = 4 N rho*BLOCKLENGTH
+float R = 10; // Population scaled crossover rate: R = 4 N rho
 float C = 0.5; // Population scaled gene conversion rate: C = 4N*kappa*lambda
 
 int numHS = 1; // Number of hotspots
@@ -157,7 +156,7 @@ std::vector<std::vector<int>> duplicontent;// Array indicating which chr carry t
 //chrom table[4 * N], *pointer[2][2 * N]; // GENOMIC INFORMATION
 std::vector<chrom> table;
 std::vector<std::vector<chrom*>> pointer;
-int era, run; // t = generation inside each era, era = PROMETHEUS generations inside each phase (from 0 to BIGTIME-1), run = number of simulation runs (from 0 to SUPERTIME-1)
+int era, run; // t = generation inside each era, era = PROMETHEUS generations inside each phase (from 0 to TIMELENGTH-1), run = number of simulation runs (from 0 to SUPERTIME-1)
 //int fixationTrajectory[20 * N + 1]; // Absolute frequency of the duplication in each generation of fixation process
 std::vector<int> fixationTrajectory;
 int timeToFixation;
@@ -187,7 +186,7 @@ std::vector<int> sample;
 int sampleN[] = {SAMPLE}; // Size of the samples (only one sample in this case)
 
 //// FILES ////
-ofstream profile;// N PROMETHEUS SUPERTIME BLOCKLENGTH SAMPLE MUTTABLESIZE B BIGTIME BURNIN/N STRUCTURED/N mu rho kappa meanTractLength
+ofstream profile;
 ofstream auxx; // NumOfFertileIndividuals, NumOfRecEvents, endTime of the Trajectory, NumOfMutEvents, NumOfMultihitCounts, NumOfConvEvents, NumOfFixationEvents (total and for each block)
 ofstream samplefile[B + 2][numofsamples][2]; // For each block and the collapsed. 0 = pi; 1 = S. For each sample
 ofstream mutationsNewFile[B]; // new mutation file, with ms-like format
@@ -281,7 +280,7 @@ void sedus::dowork() {
     log->append("SUPERTIME \n");
     letter = argv[1];
     float argR; sscanf (argv[2],"%f",&argR); R = argR;
-    rho = R / (4 * N * BLOCKLENGTH);
+    rho = R / (4 * N);
     float argC; sscanf (argv[3],"%f",&argC); C = argC;
     kappa = C / (4 * N * meanTractLength);
     int sup; sscanf (argv[4],"%d",&sup);
@@ -366,9 +365,10 @@ void sedus::dowork() {
 
         open_files();
 
-        profile << N << " " << PROMETHEUS << " " << SUPERTIME << " " << BLOCKLENGTH << " " << SAMPLE << " ";
-        profile << MUTTABLESIZE << " " << B << " " << BIGTIME << " " << BURNIN / N << " " << STRUCTURED / N << " ";
-        profile << mu << " " << rho << " " << kappa << " " << meanTractLength << "\n";
+        profile << "N: " << N << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Runs: " << SUPERTIME << "\n" << "Block length: " << BLOCKLENGTH << "\n"<< "Sample size: " << SAMPLE << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
+        if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
+        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "mu: " << mu << "\n"<< "rho: " << rho << "\n"<< "kappa: " << kappa << "\n"<< "mean IGC tract length: " << meanTractLength << "\n";
+
 
         for (j = 0; j < B; j++) {
             mutationsNewFile[j] << "ms " << SAMPLE << " " << SUPERTIME << " -s 5\n" << seconds << "\n";
@@ -487,7 +487,7 @@ struct sedus::prev_pres sedus::phaseI(){
         //perc+=iterperc;
         //probar->setValue(int(perc+=iterperc));
         setBar(int(perc+=iterperc));
-        genealogy(rho * BLOCKLENGTH, 0);// GENEALOGY (filling recombimatrix, ancestry and fertility matrices, determines all population genealogy)
+        genealogy(rho, 0);// GENEALOGY (filling recombimatrix, ancestry and fertility matrices, determines all population genealogy)
         int prom=-1;
         prev = 0;
         pres = 1;
@@ -533,7 +533,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
                     // GENEALOGY (with recombination and taking into account that duplicated chr have duplicated ancestor)
-                    genealogy(rho * BLOCKLENGTH, 1);
+                    genealogy(rho, 1);
                     int prom=-1;
                     prev = 0;
                     pres = 1;
@@ -564,7 +564,7 @@ void sedus::phaseIII(){
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
                     // GENEALOGY (all chr have the duplication, there are no two populations to take into account)
-                    genealogy(rho * BLOCKLENGTH, 0);
+                    genealogy(rho, 0);
                     int prom=-1;
                     int prev = 0;
                     int pres = 1;
@@ -1936,7 +1936,7 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     numbptotalidentity=params->igc.MEPS;
     R = params->crossover.R;
 
-    rho = R / (4 * N * BLOCKLENGTH);
+    rho = R / (4 * N);
     C= params->igc.C;
     kappa = C / (4 * N * meanTractLength);
 
