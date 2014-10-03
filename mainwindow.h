@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  SEDUS, Segmental Duplication Simulator                                **
-**  Copyright (C) 2014 Diego A. Hartasánchez,Oriol Vallès-Codina,         **
+**  Copyright (C) 2014 Diego A. Hartasánchez, Oriol Vallès-Codina,        **
 **  Marina Brasó-Vives, Juan Manuel Fuentes and Arcadi Navarro,           **
 **  Institut de Biologia Evolutiva UPF-CSIC                               **
 **                                                                        **
@@ -21,7 +21,7 @@
 **  along with this program.  If not, see http://www.gnu.org/licenses/.   **
 **                                                                        **
 ****************************************************************************
-**           Authors: Diego A. Hartasánchez,Oriol Vallès-Codina,          **
+**           Authors: Diego A. Hartasánchez, Oriol Vallès-Codina,         **
 **                   Marina Brasó-Vives, Juan Manuel Fuentes              **
 **                   and Arcadi Navarro                                   **
 **  Website/Contact: http://www.biologiaevolutiva.org/sedus/              **

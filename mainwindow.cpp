@@ -1,7 +1,7 @@
 /***************************************************************************
 **                                                                        **
 **  SEDUS, Segmental Duplication Simulator                                **
-**  Copyright (C) 2014 Diego A. Hartasánchez,Oriol Vallès-Codina,         **
+**  Copyright (C) 2014 Diego A. Hartasánchez, Oriol Vallès-Codina,        **
 **  Marina Brasó-Vives, Juan Manuel Fuentes and Arcadi Navarro,           **
 **  Institut de Biologia Evolutiva UPF-CSIC                               **
 **                                                                        **
@@ -21,7 +21,7 @@
 **  along with this program.  If not, see http://www.gnu.org/licenses/.   **
 **                                                                        **
 ****************************************************************************
-**           Authors: Diego A. Hartasánchez,Oriol Vallès-Codina,          **
+**           Authors: Diego A. Hartasánchez, Oriol Vallès-Codina,         **
 **                   Marina Brasó-Vives, Juan Manuel Fuentes              **
 **                   and Arcadi Navarro                                   **
 **  Website/Contact: http://www.biologiaevolutiva.org/sedus/              **
@@ -100,12 +100,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->runs->setText("10");
     ui->samplesize->setText("50");
     ui->generations->setText("1000");
+
     //params main
     ui->N->setText("1000");
     ui->radioButton->setChecked(true);
+    ui->fixgroupslider->setVisible(false);
     ui->theta->setText("0.001");
     ui->blocklength->setText("5000");
-
 
     //params igc
     ui->lambda->setText("100");
@@ -383,7 +384,7 @@ void MainWindow::handleButton()
     params.dir = ui->dir->text().toLocal8Bit().data();
     //params exec
     params.exec.runs = ui->runs->text().toInt();
-    params.exec.sample_size = ui->runs->text().toInt();
+    params.exec.sample_size = ui->samplesize->text().toInt();
     params.exec.generations = ui->generations->text().toInt();
     //params main
     params.main.N = ui->N->text().toInt();

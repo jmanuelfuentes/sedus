@@ -365,10 +365,13 @@ void sedus::dowork() {
 
         open_files();
 
-        profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << mu << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
+        // Printing profile
+        profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << THETA << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
         if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
-        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "kappa: " << kappa << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "rho: " << rho << "\n" << "Number of crossover regions: " << numHS << rho << "\n";
-     //   for (j = 0; j < numHS; j++) {}
+        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
+        for (j = 0; j < numHS; j++) {
+            profile  << "Crossover region number " << j << ": // st: " << crossoverBegin[j] << " // end: " << crossoverEnd[j] << " // frac: " << crossoverFrac[j] << "\n";
+        }
 
 
         for (j = 0; j < B; j++) {
@@ -1935,11 +1938,13 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     //igc parameters
     meanTractLength=params->igc.lambda;
     numbptotalidentity=params->igc.MEPS;
-    R = params->crossover.R;
-
-    rho = R / (4 * N);
-    C= params->igc.C;
+    C = params->igc.C;
     kappa = C / (4 * N * meanTractLength);
+
+    //crossover parameters
+    R = params->crossover.R;
+    rho = R / (4 * N);
+
 
     //VARIABLES with some dependency with those prior
     //chrom::setfirst(B);
