@@ -341,7 +341,7 @@ void sedus::dowork() {
         x[i].resize(iterationspersupertime);
         y[i].resize(iterationspersupertime);
     }
-    for(int j=0;j<4;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = (i*PROMETHEUS)/1000;}}
+    for(int j=0;j<4;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = (double)(i*PROMETHEUS)/1000;}}
 
     arry1.resize(SUPERTIME);
     arry2.resize(SUPERTIME);
@@ -365,9 +365,10 @@ void sedus::dowork() {
 
         open_files();
 
-        profile << "N: " << N << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Runs: " << SUPERTIME << "\n" << "Block length: " << BLOCKLENGTH << "\n"<< "Sample size: " << SAMPLE << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
+        profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << mu << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
         if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
-        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "mu: " << mu << "\n"<< "rho: " << rho << "\n"<< "kappa: " << kappa << "\n"<< "mean IGC tract length: " << meanTractLength << "\n";
+        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "kappa: " << kappa << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "rho: " << rho << "\n" << "Number of crossover regions: " << numHS << rho << "\n";
+     //   for (j = 0; j < numHS; j++) {}
 
 
         for (j = 0; j < B; j++) {
@@ -1976,17 +1977,6 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     donorRatio = argDonorRatio;
     argc = argumentscount;
     correctArguments = 0;
-    //if (params->crossover.isSC){
-        /*if (argc == 8){
-            crossoverBegin[0] = BLOCKLENGTH;
-            crossoverEnd[0] = 2*BLOCKLENGTH;
-            correctArguments = 1;
-            crossoverFrac[0] = 1;
-        }*/
-    //}
-
-            /* HEM PENSAT QUE L'INPUT PODRIA ANAR MES O MENYS AIXI PERO NO N'ESTEM SEGURS*/
-
                     if(R == 0){
                         numHS = 1;
                         crossoverBegin[0] = BLOCKLENGTH;

@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->generations->setText("1000");
     //params main
     ui->N->setText("1000");
-    ui->fixlinearRadioButton->setChecked(true);
+    ui->radioButton->setChecked(true);
     ui->theta->setText("0.001");
     ui->blocklength->setText("5000");
 
