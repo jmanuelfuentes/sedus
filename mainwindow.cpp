@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->total_slider, SIGNAL(valueChanged(int)), this, SLOT(setTotal(int)));
     connect(ui->fixlinearRadioButton, SIGNAL(toggled(bool)), this, SLOT(setFixLinearSliderVisible()));
     connect(ui->N, SIGNAL(textChanged(const QString)), this, SLOT(changeNdependecies(const QString)));
-    connect(ui->generations, SIGNAL(textChanged(const QString)), this, SLOT(changeGenerationsDependecies(const QString)));
+    connect(ui->snapshots, SIGNAL(textChanged(const QString)), this, SLOT(changeGenerationsDependecies(const QString)));
     connect(this, SIGNAL(setMinimum(double,int)), this, SLOT(changeMinimum(double,int)));
     connect(this, SIGNAL(setMaximum(double,int)), this, SLOT(changeMaximum(double,int)));
     connect(ui->b1, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE1(double)));
@@ -99,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //params execution
     ui->runs->setText("10");
     ui->samplesize->setText("50");
-    ui->generations->setText("1000");
+    ui->snapshots->setText("1000");
 
     //params main
     ui->N->setText("1000");
@@ -303,11 +303,16 @@ void MainWindow::dirButton()
    ui->dir->setText(dir);
 }
 
+bool MainWindow::checkN(){
+
+    if(!(ui->N->text().toInt()%2==0))return false;
+    return true;
+}
 bool MainWindow::checkGenerations(){
 
-    if(!(ui->generations->text().toInt()<=ui->N->text().toInt()))return false;
-    if(!(ui->generations->text().toInt()%2==0))return false;
-    if(!(ui->N->text().toInt()%ui->generations->text().toInt())==0)return false;
+    if(!(ui->snapshots->text().toInt()<=ui->N->text().toInt()))return false;
+    if(!(ui->snapshots->text().toInt()%2==0))return false;
+    if(!(ui->N->text().toInt()%ui->snapshots->text().toInt())==0)return false;
     return true;
 }
 
@@ -353,12 +358,16 @@ void MainWindow::handleButton()
     qRegisterMetaType<qvdouble>("qvdouble");
 
     //CHECKS
+    if(!checkN()){
+        QMessageBox::information(this, tr("ERROR N"), "\"Population size (N)\" must be even.");
+        return;
+    }
     if(!checkGenerations()){
-        QMessageBox::information(this, tr("ERROR GENERATIONS"), "Generations between snapshots must be minor or equal and divisor of \"Population size (N)\", as well as even number.");
+        QMessageBox::information(this, tr("ERROR GENERATIONS"), "\"Generations between snapshots\" must be even, less than or equal to \"Population size (N)\" and a factor of N.");
         return;
     }
     if(!checkRateHotSopts()){
-        QMessageBox::information(this, tr("ERROR HOTSPOTS"), "The sum of  the all hotspots ratio must be one. (Current sum: "+QString::number(sumratiohots)+")");
+        QMessageBox::information(this, tr("ERROR HOTSPOTS"), "The sum of the rations for all crossover regions must be 1. (Current sum: "+QString::number(sumratiohots)+")");
         return;
     }
 
@@ -385,7 +394,7 @@ void MainWindow::handleButton()
     //params exec
     params.exec.runs = ui->runs->text().toInt();
     params.exec.sample_size = ui->samplesize->text().toInt();
-    params.exec.generations = ui->generations->text().toInt();
+    params.exec.snapshots = ui->snapshots->text().toInt();
     //params main
     params.main.N = ui->N->text().toInt();
     params.main.theta = ui->theta->text().toDouble();
@@ -515,7 +524,7 @@ void MainWindow::handleButton()
 
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
-    ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->generations->text().toInt())/1000);
+    ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->snapshots->text().toInt())/1000);
     ui->customPlot->yAxis->setRange(0, 14);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
     ui->customPlot->yAxis->setLabel("Average pairwise differences");
@@ -579,28 +588,28 @@ void MainWindow::changeNdependecies(const QString &value){
     ui->fixlinearslider->setValue(1*(value.toInt()));
 
     //ui->burnin_slider->setMaximum(50*(ui->N->text().toInt()));
-    ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
-    ui->burnin_slider->setMinimum(ui->generations->text().toInt());
+    ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
+    ui->burnin_slider->setMinimum(ui->snapshots->text().toInt());
     ui->burnin_slider->setValue(30*(value.toInt()));
-    ui->burnin_slider->setSingleStep(ui->generations->text().toInt());
+    ui->burnin_slider->setSingleStep(ui->snapshots->text().toInt());
 
     //ui->total_slider->setMaximum(1000*(ui->N->text().toInt()));
-    ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
+    ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
     ui->total_slider->setMinimum(ui->burnin_slider->value()+20*ui->N->text().toInt());
     ui->total_slider->setValue(130*(value.toInt()));
-    ui->total_slider->setSingleStep(ui->generations->text().toInt());
+    ui->total_slider->setSingleStep(ui->snapshots->text().toInt());
 }
 void MainWindow::changeGenerationsDependecies(const QString &value){
     if(value.toInt()>0){
-        ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
         ui->burnin_slider->setMinimum(value.toInt());
         ui->burnin_slider->setSingleStep(value.toInt());
-        ui->burnin_slider->setValue((30*(ui->N->text().toInt()))-(30*(ui->N->text().toInt())%ui->generations->text().toInt()));
-        ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(1000*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->burnin_slider->setValue((30*(ui->N->text().toInt()))-(30*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
+        ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(1000*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
         ui->total_slider->setSingleStep(value.toInt());
-        ui->total_slider->setValue((130*(ui->N->text().toInt()))-(130*(ui->N->text().toInt())%ui->generations->text().toInt()));
+        ui->total_slider->setValue((130*(ui->N->text().toInt()))-(130*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
     }else{
-        //ui->generations->setText("1000");
+        //ui->snapshots->setText("1000");
     }
 }
 

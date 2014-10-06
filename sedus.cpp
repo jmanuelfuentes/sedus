@@ -189,7 +189,7 @@ int sampleN[] = {SAMPLE}; // Size of the samples (only one sample in this case)
 ofstream profile;
 ofstream auxx; // NumOfFertileIndividuals, NumOfRecEvents, endTime of the Trajectory, NumOfMutEvents, NumOfMultihitCounts, NumOfConvEvents, NumOfFixationEvents (total and for each block)
 ofstream samplefile[B + 2][numofsamples][2]; // For each block and the collapsed. 0 = pi; 1 = S. For each sample
-ofstream mutationsNewFile[B]; // new mutation file, with ms-like format
+ofstream mutationsFile[B]; // new mutation file, with ms-like format
 ofstream SFS[B+2]; // site frequency spectra for each block + collapsed only for last era
 
 ///////////////////
@@ -375,7 +375,7 @@ void sedus::dowork() {
 
 
         for (j = 0; j < B; j++) {
-            mutationsNewFile[j] << "ms " << SAMPLE << " " << SUPERTIME << " -s 5\n" << seconds << "\n";
+            mutationsFile[j] << "ms " << SAMPLE << " " << SUPERTIME << " -s 5\n" << seconds << "\n";
         }
 
         //fertility initialization
@@ -617,9 +617,9 @@ void open_files() { // Opens write-on files
     ss.str("");
 
     for (j = 0; j < B; j++) {
-        ss << "mutations_new_" << j << "_" << letter << ".dat" << endl;
+        ss << "mutations_" << j << "_" << letter << ".dat" << endl;
         ss >> str;
-        mutationsNewFile[j].open(dir+str.c_str());
+        mutationsFile[j].open(dir+str.c_str());
         ss.str("");
     }
 
@@ -650,7 +650,7 @@ void close_files() { // Closes write-on files
 
     profile.close();
     auxx.close();
-    for (j = 0; j < B; j++) { mutationsNewFile[j].close();}
+    for (j = 0; j < B; j++) { mutationsFile[j].close();}
     for (j = 0; j < B + 2; j++) {
         SFS[j].close();
         for (o = 0; o < numofsamples; o++) {
@@ -1309,7 +1309,7 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
         results[0] = number;
        // number=5;
         if(does_print == true){
-              mutationsNewFile[block] << "//\nsegsites: "<< number <<"\npositions: ";
+              mutationsFile[block] << "//\nsegsites: "<< number <<"\npositions: ";
         }
 
         if (number == 0) { return results; }
@@ -1344,13 +1344,13 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
                      for(int nn=0; nn < number ; nn++){
                       rounded_mutation = (float) prototype[nn]/BLOCKLENGTH;
                       rounded_mutation = round(rounded_mutation,5);
-                        // mutationsNewFile[block] << prototype[nn] << " ";
-                      mutationsNewFile[block] << rounded_mutation << " ";
+                        // mutationsFile[block] << prototype[nn] << " ";
+                      mutationsFile[block] << rounded_mutation << " ";
                      }
-                     mutationsNewFile[block] << "\n";
+                     mutationsFile[block] << "\n";
                }
 
-        // THIS FUNCTION PRINTS THE CONTENT OF MUTATIONSNEWFILE
+        // THIS FUNCTION PRINTS THE CONTENT OF mutationsFile
         if(does_print == true){
             int pos;
                 for (i = 0; i < 2 * s; i++) {
@@ -1358,12 +1358,12 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
                             pos = prototype[j];
                             k = location(prototype[j], h, sample[i], block);
                             if (pointer[h][sample[i]][0].mutation[block][k] == pos && k < pointer[h][sample[i]][0].mpb[block]) {
-                                mutationsNewFile[block] << "1";
+                                mutationsFile[block] << "1";
                             }else{
-                                mutationsNewFile[block] << "0";
+                                mutationsFile[block] << "0";
                             }
                          }
-                        mutationsNewFile[block] << "\n";
+                        mutationsFile[block] << "\n";
                 }
         }
 
@@ -1920,7 +1920,7 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     #define SUPERTIME sup
     sup=params->exec.runs;
     SAMPLE=params->exec.sample_size;
-    PROMETHEUS = params->exec.generations;
+    PROMETHEUS = params->exec.snapshots;
 
     //main parameters
     N = params->main.N;

@@ -857,7 +857,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QLineEdit" name="generations">
+     <widget class="QLineEdit" name="snapshots">
       <property name="geometry">
        <rect>
         <x>160</x>

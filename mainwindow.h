@@ -99,6 +99,7 @@ private:
     sedus *worker;
     bool checkRateHotSopts();
     bool checkGenerations();
+    bool checkN();
     bool uidelete;
     double sumratiohots;
     //QPushButton *m_button;

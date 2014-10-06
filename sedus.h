@@ -57,7 +57,7 @@ public:
     struct param_exec{
         int runs;
         int sample_size;
-        int generations;
+        int snapshots;
     };
     struct param_main{
         int N;
