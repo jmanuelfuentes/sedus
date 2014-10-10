@@ -90,6 +90,11 @@ private slots:
     void setMaximumE5(double value);
     void changeMinimum(double value, int item);
     void changeMaximum(double value, int item);
+    void changeAlpha1(double value);
+    void changeAlpha2(double value);
+    void changeAlpha3(double value);
+    void changeAlpha4(double value);
+    void changeAlpha5(double value);
 
 signals:
     void setMinimum(double value, int item);

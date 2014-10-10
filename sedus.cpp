@@ -184,6 +184,7 @@ struct mutation muttable[MUTTABLESIZE], temporalmuttable[MUTTABLESIZE]; // Regis
 //int sample[2 * N]; // Randomly sampled individuals
 std::vector<int> sample;
 int sampleN[] = {SAMPLE}; // Size of the samples (only one sample in this case)
+double harmonic = 0;
 
 //// FILES ////
 ofstream profile;
@@ -191,6 +192,12 @@ ofstream auxx; // NumOfFertileIndividuals, NumOfRecEvents, endTime of the Trajec
 ofstream samplefile[B + 2][numofsamples][2]; // For each block and the collapsed. 0 = pi; 1 = S. For each sample
 ofstream mutationsFile[B]; // new mutation file, with ms-like format
 ofstream SFS[B+2]; // site frequency spectra for each block + collapsed only for last era
+bool prof_f = true;
+bool pi_f = true;
+bool S_f = true;
+bool mut_f = true;
+bool SFS_f = true;
+
 
 ///////////////////
 //// FUNCTIONS ////
@@ -267,6 +274,8 @@ qvdouble arry1;
 qvdouble arry2;
 qvdouble arry3;
 qvdouble arry4;
+qvdouble arry5;
+qvdouble arry6;
 
 
 
@@ -335,23 +344,27 @@ void sedus::dowork() {
     iterationspersupertime=phaseIiter+phaseIIiter+phaseIIIiter;
     maxiterations=SUPERTIME*(phaseIiter+phaseIIiter+phaseIIIiter);
     iterperc=static_cast<float>(100)/maxiterations;
-    x.resize(4);
-    y.resize(4);
-    for(int i=0;i<4;i++){
+    x.resize(6);
+    y.resize(6);
+    for(int i=0;i<6;i++){
         x[i].resize(iterationspersupertime);
         y[i].resize(iterationspersupertime);
     }
-    for(int j=0;j<4;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = (double)(i*PROMETHEUS)/1000;}}
+    for(int j=0;j<6;j++){for (int i=0; i<iterationspersupertime; ++i){x[j][i] = (double)(i*PROMETHEUS)/1000;}}
 
     arry1.resize(SUPERTIME);
     arry2.resize(SUPERTIME);
     arry3.resize(SUPERTIME);
     arry4.resize(SUPERTIME);
+    arry5.resize(SUPERTIME);
+    arry6.resize(SUPERTIME);
     for(int i=0; i<arry1.length();i++){
         arry1[i].resize(iterationspersupertime);
         arry2[i].resize(iterationspersupertime);
         arry3[i].resize(iterationspersupertime);
         arry4[i].resize(iterationspersupertime);
+        arry5[i].resize(iterationspersupertime);
+        arry6[i].resize(iterationspersupertime);
     }
 
 
@@ -366,16 +379,18 @@ void sedus::dowork() {
         open_files();
 
         // Printing profile
-        profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << THETA << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
-        if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
-        profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
-        for (j = 0; j < numHS; j++) {
-            profile  << "Crossover region number " << j << ": // st: " << crossoverBegin[j] << " // end: " << crossoverEnd[j] << " // frac: " << crossoverFrac[j] << "\n";
+        if(prof_f==true){
+            profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << THETA << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
+            if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
+            profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
+            for (j = 0; j < numHS; j++) {
+                profile  << "Crossover region number " << j << ": // st: " << crossoverBegin[j] << " // end: " << crossoverEnd[j] << " // frac: " << crossoverFrac[j] << "\n";
+            }
         }
-
-
-        for (j = 0; j < B; j++) {
-            mutationsFile[j] << "ms " << SAMPLE << " " << SUPERTIME << " -s 5\n" << seconds << "\n";
+        if(mut_f==true){
+            for (j = 0; j < B; j++) {
+                mutationsFile[j] << "ms " << SAMPLE << " " << SUPERTIME << " -s 5\n" << seconds << "\n";
+            }
         }
 
         //fertility initialization
@@ -383,10 +398,12 @@ void sedus::dowork() {
                 fertility_ini[i][PROMETHEUS-1] = true;
                 for (int tt=0 ; tt < PROMETHEUS-1 ; tt++) {fertility_ini[i][tt] = false;}
          }
+        double totaltime = 0.0;
 
         // INITIALIZATION SUPERTIME
         for (run = 0; run < SUPERTIME; run++) {
             if(_abort)break;
+            clock_t tStart0 = clock();
             //cout << "SUPERTIME = " << run << "\n";
             QString esci=QString::fromStdString("Run "+std::to_string(run+1)+" of "+std::to_string(SUPERTIME));
             setLog(esci);
@@ -457,7 +474,9 @@ void sedus::dowork() {
 
 
          //   auxx << endTime <<"\n";
-
+            double tEnd0= (double)(clock() - tStart0)/CLOCKS_PER_SEC;
+            totaltime = totaltime+tEnd0;
+            printf("Time taken: %.2fs, %.2fs\n", tEnd0, totaltime);
         } // END SUPERTIME
         close_files();
     }
@@ -595,7 +614,7 @@ void sedus::phaseIII(){
                     double timestats= (double)(clock() - tStart2)/CLOCKS_PER_SEC;
                     timestatstotal=timestatstotal+timestats;
     }
-    printf("Time taken: %.2fs, %.2fs\n", timefortotal,timestatstotal);
+  //  printf("Time taken: %.2fs, %.2fs\n", timefortotal,timestatstotal);
 }
 
 //////////////////////////////
@@ -611,36 +630,45 @@ void open_files() { // Opens write-on files
     auxx.open(dir+str.c_str());
     ss.str("");
 
-    ss << "profile_" << letter << ".dat" << endl;
-    ss >> str;
-    profile.open(dir+str.c_str());
-    ss.str("");
-
-    for (j = 0; j < B; j++) {
-        ss << "mutations_" << j << "_" << letter << ".dat" << endl;
+    if(prof_f==true){
+        ss << "profile_" << letter << ".dat" << endl;
         ss >> str;
-        mutationsFile[j].open(dir+str.c_str());
+        profile.open(dir+str.c_str());
         ss.str("");
     }
-
-    for (j = 0; j < B+2; j++) {
-        ss << "SFS_" << j << "_" << letter << ".dat" << endl;
-        ss >> str;
-        SFS[j].open(dir+str.c_str());
-        ss.str("");
+    if(mut_f==true){
+        for (j = 0; j < B; j++) {
+            ss << "mutations_" << j << "_" << letter << ".dat" << endl;
+            ss >> str;
+            mutationsFile[j].open(dir+str.c_str());
+            ss.str("");
+        }
+    }
+    if(SFS_f==true){
+        for (j = 0; j < B; j++) {
+            ss << "SFS_" << j << "_" << letter << ".dat" << endl;
+            ss >> str;
+            SFS[j].open(dir+str.c_str());
+            ss.str("");
+        }
     }
 
-    for (o = 0; o < numofsamples; o++) {
-        for (j = 0; j < B + 2; j++) {
-            ss << "samplepi" << j << "[" << sampleN[o] << "]_" << letter << ".dat" << endl;
-            ss >> str;
-            samplefile[j][o][0].open(dir+str.c_str());
-            ss.str("");
-
-            ss << "sampleS" << j << "[" << sampleN[o] << "]_" << letter << ".dat" << endl;
-            ss >> str;
-            samplefile[j][o][1].open(dir+str.c_str());
-            ss.str("");
+    if(pi_f==true or S_f==true){
+        for (o = 0; o < numofsamples; o++) {
+            for (j = 0; j < B; j++) {
+                if(pi_f==true){
+                    ss << "samplepi" << j << "[" << sampleN[o] << "]_" << letter << ".dat" << endl;
+                    ss >> str;
+                    samplefile[j][o][0].open(dir+str.c_str());
+                    ss.str("");
+                }
+                if(S_f==true){
+                    ss << "sampleS" << j << "[" << sampleN[o] << "]_" << letter << ".dat" << endl;
+                    ss >> str;
+                    samplefile[j][o][1].open(dir+str.c_str());
+                    ss.str("");
+                }
+            }
         }
     }
 }
@@ -648,14 +676,16 @@ void open_files() { // Opens write-on files
 void close_files() { // Closes write-on files
     int j, o;
 
-    profile.close();
+    if(prof_f==true){profile.close();}
     auxx.close();
-    for (j = 0; j < B; j++) { mutationsFile[j].close();}
-    for (j = 0; j < B + 2; j++) {
-        SFS[j].close();
-        for (o = 0; o < numofsamples; o++) {
-            samplefile[j][o][0].close();
-            samplefile[j][o][1].close();
+    if(mut_f==true){for (j = 0; j < B; j++) { mutationsFile[j].close();}}
+    if(pi_f==true or S_f==true){
+        for (j = 0; j < B; j++) {
+            if(SFS_f==true){SFS[j].close();}
+            for (o = 0; o < numofsamples; o++) {
+                if(pi_f==true){samplefile[j][o][0].close();}
+                if(S_f==true){samplefile[j][o][1].close();}
+            }
         }
     }
 }
@@ -1080,31 +1110,28 @@ void statistics(int prev, bool does_print, int era) {
         // CALCULATES THE SFS FOR THE SAMPLE BLOCK BY BLOCK
         for (j = 0; j < B; j++) {
             resultsSample = SiteFrequencySpectrumPrint(prev, j, sampleN[o], does_print);
-            samplefile[j][o][0] << resultsSample[1] << " "; // the results array keeps (S,pi) but for the sake of tradition
-            samplefile[j][o][1] << resultsSample[0] << " "; // we save it as (pi,S)
+            if(pi_f==true){samplefile[j][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
+            if(S_f==true){samplefile[j][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
             double sum=0;
             switch (j)
             {
-                case 0: {arry1[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry1[i][era];};y[0][era]=sum/(run+1);break;}
-                case 1: {arry2[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry2[i][era];};y[1][era]=sum/(run+1);break;}
-                case 2: {arry3[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry3[i][era];};y[2][era]=sum/(run+1);break;}
+                case 0: {arry1[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry1[i][era];};y[0][era]=sum/(run+1);
+                        arry4[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry4[i][era]/harmonic);};y[3][era]=sum/(run+1);break;}
+                case 1: {arry2[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry2[i][era];};y[1][era]=sum/(run+1);
+                        arry5[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry5[i][era]/harmonic);};y[4][era]=sum/(run+1);break;}
+                case 2: {arry3[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry3[i][era];};y[2][era]=sum/(run+1);
+                        arry6[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry6[i][era]/harmonic);};y[5][era]=sum/(run+1);break;}
             }
         }
 
-        resultsSample = SiteFrequencySpectrum_02(prev, sampleN[o], does_print); // Collapsed for samples
-        samplefile[B][o][0] << resultsSample[1] << " "; // the results array keeps (S,pi) but for the sake of tradition
-        samplefile[B][o][1] << resultsSample[0] << " "; // we save it as (pi,S)
+  //      resultsSample = SiteFrequencySpectrum_02(prev, sampleN[o], does_print); // Collapsed for samples
+  //      if(pi_f==true){samplefile[B][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
+  //      if(S_f==true){samplefile[B][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
 
-        arry4[run][era]=resultsSample[1];
-        double sum=0;
-        for(int i=0;i<=run;i++){
-            sum+=arry4[i][era];
-        }
-        y[3][era]=sum/(run+1);
 
-        resultsSample = SiteFrequencySpectrum_02_Calling(prev, sampleN[o], does_print); // Collapsed for samples with calling
-        samplefile[B+1][o][0] << resultsSample[1] << " "; // the results array keeps (S,pi) but for the sake of tradition
-        samplefile[B+1][o][1] << resultsSample[0] << " "; // we save it as (pi,S)
+ //       resultsSample = SiteFrequencySpectrum_02_Calling(prev, sampleN[o], does_print); // Collapsed for samples with calling
+ //       if(pi_f==true){samplefile[B+1][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
+ //       if(S_f==true){samplefile[B+1][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
 
     }
 
@@ -1308,7 +1335,7 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
         }
         results[0] = number;
        // number=5;
-        if(does_print == true){
+        if(mut_f == true){
               mutationsFile[block] << "//\nsegsites: "<< number <<"\npositions: ";
         }
 
@@ -1339,19 +1366,18 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
         }
 
         // PRINTS POSITIONS OF SEGREGATING SITES WITH FIVE DECIMAL POSITIONS
-        if(does_print == true){
-                     float rounded_mutation;
-                     for(int nn=0; nn < number ; nn++){
-                      rounded_mutation = (float) prototype[nn]/BLOCKLENGTH;
-                      rounded_mutation = round(rounded_mutation,5);
-                        // mutationsFile[block] << prototype[nn] << " ";
-                      mutationsFile[block] << rounded_mutation << " ";
-                     }
-                     mutationsFile[block] << "\n";
-               }
+        if(mut_f == true){
+            float rounded_mutation;
+            for(int nn=0; nn < number ; nn++){
+                rounded_mutation = (float) prototype[nn]/BLOCKLENGTH;
+                rounded_mutation = round(rounded_mutation,5);
+                mutationsFile[block] << rounded_mutation << " ";
+            }
+            mutationsFile[block] << "\n";
+        }
 
         // THIS FUNCTION PRINTS THE CONTENT OF mutationsFile
-        if(does_print == true){
+        if(mut_f == true){
             int pos;
                 for (i = 0; i < 2 * s; i++) {
                         for (j = 0; j < number; j++) {
@@ -1382,7 +1408,7 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
                 }
         }
 
-        if(does_print==true){
+        if(SFS_f==true){
                      for (i = 1; i < 2 * s; i++) {
                         SFS[block] << xi[i] << " ";
                      }
@@ -1476,7 +1502,7 @@ float * SiteFrequencySpectrum_02(int h, int nn, bool does_print) { // Collapsed
         }
     }
 
-    if(does_print==true){
+    if(SFS_f==true){
          for (i = 1; i < 2 * nn; i++) {
             SFS[3] << xi[i] << " ";
         }
@@ -1559,7 +1585,7 @@ float * SiteFrequencySpectrum_02_Calling(int h, int nn, bool does_print) { // Co
         }
     }
 
-    if(does_print==true){
+    if(SFS_f==true){
          for (i = 1; i < 2*nn; i++) {
             SFS[4] << xi[i] << " ";
         }
@@ -1920,6 +1946,11 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     #define SUPERTIME sup
     sup=params->exec.runs;
     SAMPLE=params->exec.sample_size;
+    harmonic = 0.0;
+    for (int i=1;i<2*SAMPLE;i++){
+        harmonic = harmonic + (double) 1/i;
+    }
+    printf("%f %d \n" ,harmonic, SAMPLE);
     PROMETHEUS = params->exec.snapshots;
 
     //main parameters
@@ -1945,6 +1976,12 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     R = params->crossover.R;
     rho = R / (4 * N);
 
+    //output files parameters
+    prof_f = params->outs.proffile;
+    pi_f = params->outs.pifile;
+    S_f = params->outs.Sfile;
+    mut_f = params->outs.mutfile;
+    SFS_f = params->outs.SFSfile;
 
     //VARIABLES with some dependency with those prior
     //chrom::setfirst(B);

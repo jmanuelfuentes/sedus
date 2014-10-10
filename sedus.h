@@ -86,12 +86,24 @@ public:
         int hotspots_number;
         hotspot hotspots[5];
     };
+    struct param_plot{
+        bool piorS;
+    };
+    struct param_outs{
+        bool proffile;
+        bool pifile;
+        bool Sfile;
+        bool mutfile;
+        bool SFSfile;
+    };
 
     struct parameters{
         param_exec exec;
         param_main main;
         param_igc igc;
         param_crossover crossover;
+        param_plot plot;
+        param_outs outs;
         std::string id;
         std::string dir;
     };

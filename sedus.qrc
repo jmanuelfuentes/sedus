@@ -7,5 +7,11 @@
         <file>img/splash.png</file>
         <file>img/stop.png</file>
         <file>img/sedus.ico</file>
+        <file>img/blocks.png</file>
+        <file>img/h1.png</file>
+        <file>img/h2.png</file>
+        <file>img/h3.png</file>
+        <file>img/h4.png</file>
+        <file>img/h5.png</file>
     </qresource>
 </RCC>

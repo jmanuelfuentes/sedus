@@ -87,9 +87,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->e4, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE4(double)));
     connect(ui->b5, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE5(double)));
     connect(ui->e5, SIGNAL(valueChanged(double)), this, SLOT(setMaximumE5(double)));
+    connect(ui->rate1, SIGNAL(valueChanged(double)), this, SLOT(changeAlpha1(double)));
+    connect(ui->rate2, SIGNAL(valueChanged(double)), this, SLOT(changeAlpha2(double)));
+    connect(ui->rate3, SIGNAL(valueChanged(double)), this, SLOT(changeAlpha3(double)));
+    connect(ui->rate4, SIGNAL(valueChanged(double)), this, SLOT(changeAlpha4(double)));
+    connect(ui->rate5, SIGNAL(valueChanged(double)), this, SLOT(changeAlpha5(double)));
 
     //main window
-    ui->id->setText("test-"+QDateTime::currentDateTime().toString("dd.MM.yyyy.hh.mm.ss"));
+    ui->id->setText("test-"+QDateTime::currentDateTime().toString("dd.MM.yyyy"));
     ui->dir->setText(QDir::currentPath());
     ui->log->setVisible(false);
     ui->progressBar->setVisible(false);
@@ -122,8 +127,31 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->hot3->setVisible(false);
     ui->hot4->setVisible(false);
     ui->hot5->setVisible(false);
+    ui->lh1->setVisible(true);
+    ui->lh2->setVisible(false);
+    ui->lh3->setVisible(false);
+    ui->lh4->setVisible(false);
+    ui->lh5->setVisible(false);
     ui->hotspots->setValue(1);
     ui->rate1->setValue(1.00);
+
+    //params plot
+    ui->plotpi->setChecked(true);
+
+    //params outs
+    ui->proffile->setChecked(true);
+    ui->pifile->setChecked(true);
+    ui->Sfile->setChecked(true);
+    ui->mutfile->setChecked(true);
+    ui->SFSfile->setChecked(true);
+
+
+ //   QPalette palette = ui->colh1->palette();
+ //   QColor color = palette.color(QPalette::Base);
+ //   color.setAlpha(255); // 1 to 255
+ //   palette.setColor(QPalette::Base, color);
+ //   ui->colh1->setPalette(palette);
+
 
     /*ui->R->setText("10");
     ui->C->setText("1");
@@ -166,31 +194,84 @@ void MainWindow::setMinimumE5(double value){
 void MainWindow::setMaximumE5(double value){
     emit setMaximum(value,5);
 }
+
+void MainWindow::changeAlpha1(double value){
+       QPalette palette = ui->ch1->palette();
+       QColor color = palette.color(QPalette::Base);
+       color.setAlpha((int)(value*255)); // 1 to 255
+       palette.setColor(QPalette::Base, color);
+       ui->ch1->setPalette(palette);
+       ui->lh1->setPalette(palette);
+}
+void MainWindow::changeAlpha2(double value){
+       QPalette palette = ui->ch2->palette();
+       QColor color = palette.color(QPalette::Base);
+       color.setAlpha((int)(value*255)); // 1 to 255
+       palette.setColor(QPalette::Base, color);
+       ui->ch2->setPalette(palette);
+       ui->lh2->setPalette(palette);
+}
+void MainWindow::changeAlpha3(double value){
+       QPalette palette = ui->ch3->palette();
+       QColor color = palette.color(QPalette::Base);
+       color.setAlpha((int)(value*255)); // 1 to 255
+       palette.setColor(QPalette::Base, color);
+       ui->ch3->setPalette(palette);
+       ui->lh3->setPalette(palette);
+}
+void MainWindow::changeAlpha4(double value){
+       QPalette palette = ui->ch4->palette();
+       QColor color = palette.color(QPalette::Base);
+       color.setAlpha((int)(value*255)); // 1 to 255
+       palette.setColor(QPalette::Base, color);
+       ui->ch4->setPalette(palette);
+       ui->lh4->setPalette(palette);
+}
+void MainWindow::changeAlpha5(double value){
+       QPalette palette = ui->ch5->palette();
+       QColor color = palette.color(QPalette::Base);
+       color.setAlpha((int)(value*255)); // 1 to 255
+       palette.setColor(QPalette::Base, color);
+       ui->ch5->setPalette(palette);
+       ui->lh5->setPalette(palette);
+}
+
+
 void MainWindow::changeMinimum(double value, int item){
     switch (item){
         case 1:{
             if(value<3)ui->e1->setMinimum(value+0.0001);
             else ui->b1->setValue(ui->e1->value()-0.0001);
+            ui->lh1->setFixedWidth((ui->e1->value() - ui->b1->value())*100);
+            ui->lh1->setGeometry(ui->b1->value()*100+ui->blocks->geometry().x(),ui->lh1->geometry().y(),ui->lh1->geometry().width(),ui->lh1->geometry().height());
             break;
         }
     case 2:{
         if(value<3)ui->e2->setMinimum(value+0.0001);
         else ui->b2->setValue(ui->e2->value()-0.0001);
+        ui->lh2->setFixedWidth((ui->e2->value() - ui->b2->value())*100);
+        ui->lh2->setGeometry(ui->b2->value()*100+ui->blocks->geometry().x(),ui->lh2->geometry().y(),ui->lh2->geometry().width(),ui->lh2->geometry().height());
         break;
     }
     case 3:{
         if(value<3)ui->e3->setMinimum(value+0.0001);
         else ui->b3->setValue(ui->e3->value()-0.0001);
+        ui->lh3->setFixedWidth((ui->e3->value() - ui->b3->value())*100);
+        ui->lh3->setGeometry(ui->b3->value()*100+ui->blocks->geometry().x(),ui->lh3->geometry().y(),ui->lh3->geometry().width(),ui->lh3->geometry().height());
         break;
     }
     case 4:{
        if(value<3) ui->e4->setMinimum(value+0.0001);
        else ui->b4->setValue(ui->e4->value()-0.0001);
+       ui->lh4->setFixedWidth((ui->e4->value() - ui->b4->value())*100);
+       ui->lh4->setGeometry(ui->b4->value()*100+ui->blocks->geometry().x(),ui->lh4->geometry().y(),ui->lh4->geometry().width(),ui->lh4->geometry().height());
         break;
     }
     case 5:{
         if(value<3)ui->e5->setMinimum(value+0.0001);
         else ui->b5->setValue(ui->e5->value()-0.0001);
+        ui->lh5->setFixedWidth((ui->e5->value() - ui->b5->value())*100);
+        ui->lh5->setGeometry(ui->b5->value()*100+ui->blocks->geometry().x(),ui->lh5->geometry().y(),ui->lh5->geometry().width(),ui->lh5->geometry().height());
         break;
     }
 
@@ -198,29 +279,45 @@ void MainWindow::changeMinimum(double value, int item){
 }
 void MainWindow::changeMaximum(double value, int item){
     switch (item){
-        case 1:{
+    case 1:{
             if(value>0)ui->b1->setMaximum(value-0.0001);
             else ui->e1->setValue(ui->b1->value()+0.0001);
+            ui->lh1->setVisible(false);
+            ui->lh1->setVisible(true);
+            ui->lh1->setFixedWidth((ui->e1->value() - ui->b1->value())*100);
+            ui->lh1->setGeometry(ui->b1->value()*100+ui->blocks->geometry().x(),ui->lh1->geometry().y(),ui->lh1->geometry().width(),ui->lh1->geometry().height());
             break;
         }
     case 2:{
         if(value>0)ui->b2->setMaximum(value-0.0001);
         else ui->e2->setValue(ui->b2->value()+0.0001);
+        ui->lh2->setVisible(false);
+        ui->lh2->setVisible(true);
+        ui->lh2->setFixedWidth((ui->e2->value() - ui->b2->value())*100);
         break;
     }
     case 3:{
         if(value>0)ui->b3->setMaximum(value-0.0001);
         else ui->e3->setValue(ui->b3->value()+0.0001);
+        ui->lh3->setVisible(false);
+        ui->lh3->setVisible(true);
+        ui->lh3->setFixedWidth((ui->e3->value() - ui->b3->value())*100);
         break;
     }
     case 4:{
         if(value>0)ui->b4->setMaximum(value-0.0001);
         else ui->e4->setValue(ui->b4->value()+0.0001);
+        ui->lh4->setVisible(false);
+        ui->lh4->setVisible(true);
+        ui->lh4->setFixedWidth((ui->e4->value() - ui->b4->value())*100);
         break;
     }
     case 5:{
         if(value>0)ui->b5->setMaximum(value-0.0001);
         else ui->e5->setValue(ui->b5->value()+0.0001);
+        ui->lh5->setVisible(false);
+        ui->lh5->setVisible(true);
+        ui->lh5->setFixedWidth((ui->e5->value() - ui->b5->value())*100);
         break;
     }
     }
@@ -232,26 +329,36 @@ void MainWindow::hotspots(int value){
         case 1:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(false);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
             ui->rate1->setValue(1);
+            ui->lh1->setVisible(true);ui->lh2->setVisible(false);ui->lh3->setVisible(false);ui->lh4->setVisible(false);ui->lh5->setVisible(false);
+
             break;
         }
         case 2:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(false);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
             ui->rate1->setValue(0.5);ui->rate2->setValue(0.5);
+            ui->lh1->setVisible(true);ui->lh2->setVisible(true);ui->lh3->setVisible(false);ui->lh4->setVisible(false);ui->lh5->setVisible(false);
+
             break;
         }
         case 3:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(false);ui->hot5->setVisible(false);
             ui->rate1->setValue(0.33);ui->rate2->setValue(0.33);ui->rate3->setValue(0.34);
+            ui->lh1->setVisible(true);ui->lh2->setVisible(true);ui->lh3->setVisible(true);ui->lh4->setVisible(false);ui->lh5->setVisible(false);
+
             break;
         }
         case 4:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(false);
             ui->rate1->setValue(0.25);ui->rate2->setValue(0.25);ui->rate3->setValue(0.25);ui->rate4->setValue(0.25);
+            ui->lh1->setVisible(true);ui->lh2->setVisible(true);ui->lh3->setVisible(true);ui->lh4->setVisible(true);ui->lh5->setVisible(false);
+
             break;
         }
         case 5:{
             ui->hot1->setVisible(true);ui->hot2->setVisible(true);ui->hot3->setVisible(true);ui->hot4->setVisible(true);ui->hot5->setVisible(true);
             ui->rate1->setValue(0.2);ui->rate2->setValue(0.2);ui->rate3->setValue(0.2);ui->rate4->setValue(0.2);ui->rate5->setValue(0.2);
+            ui->lh1->setVisible(true);ui->lh2->setVisible(true);ui->lh3->setVisible(true);ui->lh4->setVisible(true);ui->lh5->setVisible(true);
+
             break;
         }
     }
@@ -268,7 +375,7 @@ void MainWindow::stop(){
     ui->m_button->setEnabled(true);
     ui->stop->setEnabled(false);
     ui->log->clear();
-    ui->customPlot->clearGraphs();
+    //ui->customPlot->clearGraphs();
     //ui->customPlot->setEnabled(false);
 }
 
@@ -282,7 +389,7 @@ void MainWindow::quitWork(){
     ui->m_button->setEnabled(true);
     ui->stop->setEnabled(false);
     ui->log->clear();
-    ui->customPlot->clearGraphs();
+    //ui->customPlot->clearGraphs();
     //ui->customPlot->setEnabled(false);
     if(uidelete){delete ui;}
 }
@@ -378,6 +485,7 @@ void MainWindow::handleButton()
         ui->progressBar->setVisible(true);
     }
     ui->customPlot->setVisible(true);
+    ui->customPlot->clearGraphs();
     ui->log->setVisible(true);
     ui->m_button->setEnabled(false);
     ui->stop->setEnabled(true);
@@ -407,6 +515,12 @@ void MainWindow::handleButton()
     }else{
         params.main.israndom = true;
     }
+    if(ui->proffile->isChecked()){params.outs.proffile = true;}
+    if(ui->pifile->isChecked()){params.outs.pifile = true;}
+    if(ui->Sfile->isChecked()){params.outs.Sfile = true;}
+    if(ui->mutfile->isChecked()){params.outs.mutfile = true;}
+    if(ui->SFSfile->isChecked()){params.outs.SFSfile = true;}
+
     //params igc
     params.igc.C = ui->C->text().toFloat();
     //params.igc.donor = ui->donor->text().toFloat();
@@ -449,7 +563,12 @@ void MainWindow::handleButton()
 
         }
     }
-
+    //params plot
+    if(ui->plotpi->isChecked()){
+        params.plot.piorS = true;
+    }else{
+        params.plot.piorS = false;
+    }
 
 
     #ifdef _WIN32
@@ -472,15 +591,16 @@ void MainWindow::handleButton()
     ui->customPlot->legend->setFont(QFont("Helvetica",9));
     ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop);
     ui->customPlot->addGraph();
+
     ui->customPlot->graph(0)->setName("Original");
     ui->customPlot->graph(0)->setPen(QPen(QColor(26,30,178)));
-    //ui->customPlot->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
     ui->customPlot->addGraph();
     ui->customPlot->graph(1)->setName("Single-copy");
     ui->customPlot->graph(1)->setPen(QPen(QColor(255,124,0)));
     ui->customPlot->addGraph();
     ui->customPlot->graph(2)->setName("Duplicated");
     ui->customPlot->graph(2)->setPen(QPen(QColor(62,148,209)));
+
     /*ui->customPlot->addGraph();
     ui->customPlot->graph(3)->setName("O+D");
     ui->customPlot->graph(3)->setPen(QPen(Qt::blue));
@@ -525,12 +645,19 @@ void MainWindow::handleButton()
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->snapshots->text().toInt())/1000);
-    ui->customPlot->yAxis->setRange(0, 14);
+    ui->customPlot->yAxis->setRange(0, 20);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
     ui->customPlot->yAxis->setLabel("Average pairwise differences");
-    ui->customPlot->graph(0)->setData(x[0], y[0]);
-    ui->customPlot->graph(1)->setData(x[1], y[1]);
-    ui->customPlot->graph(2)->setData(x[2], y[2]);
+    if(ui->plotpi->isChecked()){
+        ui->customPlot->graph(0)->setData(x[0], y[0]);
+        ui->customPlot->graph(1)->setData(x[1], y[1]);
+        ui->customPlot->graph(2)->setData(x[2], y[2]);
+    }
+    if(ui->plotS->isChecked()){
+        ui->customPlot->graph(0)->setData(x[0], y[3]);
+        ui->customPlot->graph(1)->setData(x[1], y[4]);
+        ui->customPlot->graph(2)->setData(x[2], y[5]);
+    }
     //ui->customPlot->graph(3)->setData(x[3], y[3]);
     ui->customPlot->replot();
 }
