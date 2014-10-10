@@ -6155,77 +6155,12 @@
         <x>29</x>
         <y>99</y>
         <width>341</width>
-        <height>131</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="title">
        <string>Ouput files:</string>
       </property>
-      <widget class="QRadioButton" name="proffile">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>27</y>
-         <width>117</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Profile file</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="pifile">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>47</y>
-         <width>301</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Average pairwise differences (π) file</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="Sfile">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>67</y>
-         <width>291</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Segregating sites (S) file</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="mutfile">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>87</y>
-         <width>151</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Mutation ms file</string>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="SFSfile">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>107</y>
-         <width>117</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>SFS file</string>
-       </property>
-      </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_4">
       <property name="geometry">
@@ -6242,8 +6177,8 @@
       <widget class="QRadioButton" name="plotpi">
        <property name="geometry">
         <rect>
-         <x>18</x>
-         <y>30</y>
+         <x>20</x>
+         <y>25</y>
          <width>311</width>
          <height>22</height>
         </rect>
@@ -6255,7 +6190,7 @@
       <widget class="QRadioButton" name="plotS">
        <property name="geometry">
         <rect>
-         <x>18</x>
+         <x>20</x>
          <y>50</y>
          <width>311</width>
          <height>22</height>
@@ -6266,8 +6201,78 @@
        </property>
       </widget>
      </widget>
+     <widget class="QRadioButton" name="pifile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>150</y>
+        <width>301</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Average pairwise differences (π) file</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="Sfile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>175</y>
+        <width>300</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Segregating sites (S) file</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="mutfile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>200</y>
+        <width>300</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Mutation ms file</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="SFSfile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>225</y>
+        <width>300</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>SFS file</string>
+      </property>
+     </widget>
+     <widget class="QRadioButton" name="proffile">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>125</y>
+        <width>301</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Profile file</string>
+      </property>
+     </widget>
      <zorder>groupBox_4</zorder>
      <zorder>groupBox_3</zorder>
+     <zorder>pifile</zorder>
+     <zorder>Sfile</zorder>
+     <zorder>mutfile</zorder>
+     <zorder>SFSfile</zorder>
+     <zorder>proffile</zorder>
     </widget>
    </widget>
    <widget class="QLabel" name="label_2">

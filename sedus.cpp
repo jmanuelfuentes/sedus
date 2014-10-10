@@ -188,7 +188,7 @@ double harmonic = 0;
 
 //// FILES ////
 ofstream profile;
-ofstream auxx; // NumOfFertileIndividuals, NumOfRecEvents, endTime of the Trajectory, NumOfMutEvents, NumOfMultihitCounts, NumOfConvEvents, NumOfFixationEvents (total and for each block)
+//ofstream auxx; // NumOfFertileIndividuals, NumOfRecEvents, endTime of the Trajectory, NumOfMutEvents, NumOfMultihitCounts, NumOfConvEvents, NumOfFixationEvents (total and for each block)
 ofstream samplefile[B + 2][numofsamples][2]; // For each block and the collapsed. 0 = pi; 1 = S. For each sample
 ofstream mutationsFile[B]; // new mutation file, with ms-like format
 ofstream SFS[B+2]; // site frequency spectra for each block + collapsed only for last era
@@ -625,10 +625,10 @@ void open_files() { // Opens write-on files
     int j, o;
     stringstream ss;
 
-    ss << "auxx_" << letter << ".dat" << endl;
-    ss >> str;
-    auxx.open(dir+str.c_str());
-    ss.str("");
+//    ss << "auxx_" << letter << ".dat" << endl;
+//    ss >> str;
+//    auxx.open(dir+str.c_str());
+//    ss.str("");
 
     if(prof_f==true){
         ss << "profile_" << letter << ".dat" << endl;
@@ -677,7 +677,7 @@ void close_files() { // Closes write-on files
     int j, o;
 
     if(prof_f==true){profile.close();}
-    auxx.close();
+ //   auxx.close();
     if(mut_f==true){for (j = 0; j < B; j++) { mutationsFile[j].close();}}
     if(pi_f==true or S_f==true){
         for (j = 0; j < B; j++) {
@@ -1316,7 +1316,7 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
         if(block == 2){
             //duplicationFreq = DupliFreq(prev, 2, n);
             duplicationFreq = DupliFreq(h, 2, n);
-            auxx << duplicationFreq << " ";
+       //     auxx << duplicationFreq << " ";
             s = (int) duplicationFreq/2;
         }
         if (s == 0) { return results; }

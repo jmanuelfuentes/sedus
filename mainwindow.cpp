@@ -515,11 +515,11 @@ void MainWindow::handleButton()
     }else{
         params.main.israndom = true;
     }
-    if(ui->proffile->isChecked()){params.outs.proffile = true;}
-    if(ui->pifile->isChecked()){params.outs.pifile = true;}
-    if(ui->Sfile->isChecked()){params.outs.Sfile = true;}
-    if(ui->mutfile->isChecked()){params.outs.mutfile = true;}
-    if(ui->SFSfile->isChecked()){params.outs.SFSfile = true;}
+    ui->proffile->isChecked()?params.outs.proffile = true:params.outs.proffile = false;
+    ui->pifile->isChecked()?params.outs.pifile = true:params.outs.pifile = false;
+    ui->Sfile->isChecked()?params.outs.Sfile = true:params.outs.Sfile = false;
+    ui->mutfile->isChecked()?params.outs.mutfile = true:params.outs.mutfile = false;
+    ui->SFSfile->isChecked()?params.outs.SFSfile = true:params.outs.SFSfile = false;
 
     //params igc
     params.igc.C = ui->C->text().toFloat();
