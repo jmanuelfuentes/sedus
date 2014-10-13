@@ -777,7 +777,7 @@
      <enum>QTabWidget::Rounded</enum>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>4</number>
     </property>
     <property name="usesScrollButtons">
      <bool>true</bool>
@@ -6211,7 +6211,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Average pairwise differences (π) file</string>
+       <string>Average pairwise differences (π)</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="Sfile">
@@ -6224,7 +6224,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Segregating sites (S) file</string>
+       <string>Segregating sites (S)</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="mutfile">
@@ -6237,7 +6237,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Mutation ms file</string>
+       <string>Mutations (ms format)</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="SFSfile">
@@ -6250,7 +6250,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>SFS file</string>
+       <string>SFS</string>
       </property>
      </widget>
      <widget class="QRadioButton" name="proffile">
@@ -6263,7 +6263,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Profile file</string>
+       <string>Profile</string>
       </property>
      </widget>
      <zorder>groupBox_4</zorder>
