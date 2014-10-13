@@ -217,7 +217,7 @@ void duplication(int,int); // Create Duplication for eva (first duplicated chrom
 void mutation(float, int, int); // For each fertile chromosome decide if a mutation happens and execute it if necessary
 void conversion(float, int, int, float); // Only when duFreq is true. For each fertile chromosome decide if conversion happens and execute it if necessary
 
-void statistics(int, bool, int); // Execution of all the statistic calculations (for each Era)
+void statistics(int, int); // Execution of all the statistic calculations (for each Era)
 void FSL(int); // Count of All the Segregating, Fixed, Lost and Shared sites
 
 void copychr(int, int, int, int); // Copy a chromosome (when there is no recombination)
@@ -226,7 +226,7 @@ int location(int, int, int, int); // Returns the location of a mutation or point
 void EraseFixedMutations(int, int, int); // Erase fixed mutations from chromosomes that have them (not necessary to consider them any more)
 
 //float * SiteFrequencySpectrum(int, int, int); // Calculate pi and S values for a block
-float * SiteFrequencySpectrumPrint(int, int, int, bool); // Calculate pi and S values for a block
+float * SiteFrequencySpectrumPrint(int, int, int); // Calculate pi and S values for a block
 //float * SiteFrequencySpectrumByBins(int, int, int); // Calculate pi and S values for a det block (by a det number of bins (if one = whople block))
 float * SiteFrequencySpectrum_02(int, int, bool); // Calculate pi and S values for the collapsed block (0+2)
 float * SiteFrequencySpectrum_02_Calling(int, int, bool); // Calculates pi and S for the collapsed sample doing the collapsed calling
@@ -503,7 +503,6 @@ struct sedus::prev_pres sedus::phaseI(){
     // 0 -> BURNIN/PROMETHEUS
     int prev = 0;
     int pres = 1;
-    bool does_print = false;
     prev_pres ret;
     for (era = 0; era < (int) BURNIN / PROMETHEUS; era++) {
         if(_abort)break;
@@ -525,7 +524,7 @@ struct sedus::prev_pres sedus::phaseI(){
             mutation(mu, i, pres);
         }
         // CALCULATE THE STATISTICS
-        statistics(pres, does_print, era);
+        statistics(pres, era);
     }
     ret.prev = prev;
     ret.pres = pres;
@@ -533,7 +532,6 @@ struct sedus::prev_pres sedus::phaseI(){
 }
 
 int sedus::phaseII(int timeToFixation,int prev, int pres){
-    bool does_print = false;
     // Generating Fixation Trajectory in a diploid population
                 int endTime = GenerateFixationTrajectory(STRUCTURED + 1, timeToFixation);
                 cout << endTime << endl;
@@ -572,7 +570,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                             conversion(kappa, i, pres, donorRatio);
                     }
                     // CALCULATE THE STATISTICS
-                    statistics(pres, does_print,era);
+                    statistics(pres, era);
                 }
        return endTime;
 }
@@ -580,7 +578,6 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
 void sedus::phaseIII(){
     double timefortotal=0.0;
     double timestatstotal=0.0;
-    bool does_print = false;
     for (era = (int) (BURNIN + STRUCTURED) / PROMETHEUS; era < (int) TIMELENGTH / PROMETHEUS; era++) {
                     if(_abort)break;
                     //perc+=iterperc;
@@ -607,10 +604,9 @@ void sedus::phaseIII(){
                     timefortotal=timefortotal+timefor;
                     // CALCULATE THE STATISTICS
                     if(era == ((int) (TIMELENGTH/PROMETHEUS)-1)){
-                        does_print=true;
                     }
                     clock_t tStart2 = clock();
-                    statistics(pres, does_print,era);
+                    statistics(pres, era);
                     double timestats= (double)(clock() - tStart2)/CLOCKS_PER_SEC;
                     timestatstotal=timestatstotal+timestats;
     }
@@ -1097,7 +1093,7 @@ void conversion(float probability, int i, int pres, float donorRatio) {
 ////  STATISTICS  ////
 //////////////////////
 
-void statistics(int prev, bool does_print, int era) {
+void statistics(int prev, int era) {
     int j, o;
     float * resultsSample;
 
@@ -1109,27 +1105,27 @@ void statistics(int prev, bool does_print, int era) {
 
         // CALCULATES THE SFS FOR THE SAMPLE BLOCK BY BLOCK
         for (j = 0; j < B; j++) {
-            resultsSample = SiteFrequencySpectrumPrint(prev, j, sampleN[o], does_print);
+            resultsSample = SiteFrequencySpectrumPrint(prev, j, sampleN[o]);
             if(pi_f==true){samplefile[j][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
             if(S_f==true){samplefile[j][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
             double sum=0;
             switch (j)
             {
-                case 0: {arry1[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry1[i][era];};y[0][era]=sum/(run+1);
-                        arry4[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry4[i][era]/harmonic);};y[3][era]=sum/(run+1);break;}
-                case 1: {arry2[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry2[i][era];};y[1][era]=sum/(run+1);
-                        arry5[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry5[i][era]/harmonic);};y[4][era]=sum/(run+1);break;}
-                case 2: {arry3[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry3[i][era];};y[2][era]=sum/(run+1);
-                        arry6[run][era]=resultsSample[0];for(int i=0;i<=run;i++){sum+=(double)(arry6[i][era]/harmonic);};y[5][era]=sum/(run+1);break;}
-            }
+                case 0: {arry1[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry1[i][era];} y[0][era]=sum/(run+1);sum=0;
+                        arry4[run][era]=(double)(resultsSample[0]/harmonic);for(int i=0;i<=run;i++){sum+=arry4[i][era];} y[3][era]=sum/(run+1);break;}
+                case 1: {arry2[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry2[i][era];} y[1][era]=sum/(run+1);sum=0;
+                        arry5[run][era]=(double)(resultsSample[0]/harmonic);for(int i=0;i<=run;i++){sum+=arry5[i][era];} y[4][era]=sum/(run+1);break;}
+                case 2: {arry3[run][era]=resultsSample[1];for(int i=0;i<=run;i++){sum+=arry3[i][era];} y[2][era]=sum/(run+1);sum=0;
+                        arry6[run][era]=(double)(resultsSample[0]/harmonic);for(int i=0;i<=run;i++){sum+=arry6[i][era];} y[5][era]=sum/(run+1);break;}
+           }
         }
 
-  //      resultsSample = SiteFrequencySpectrum_02(prev, sampleN[o], does_print); // Collapsed for samples
+  //      resultsSample = SiteFrequencySpectrum_02(prev, sampleN[o]); // Collapsed for samples
   //      if(pi_f==true){samplefile[B][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
   //      if(S_f==true){samplefile[B][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
 
 
- //       resultsSample = SiteFrequencySpectrum_02_Calling(prev, sampleN[o], does_print); // Collapsed for samples with calling
+ //       resultsSample = SiteFrequencySpectrum_02_Calling(prev, sampleN[o]); // Collapsed for samples with calling
  //       if(pi_f==true){samplefile[B+1][o][0] << resultsSample[1] << " ";} // the results array keeps (S,pi) but for the sake of tradition
  //       if(S_f==true){samplefile[B+1][o][1] << resultsSample[0] << " ";} // we save it as (pi,S)
 
@@ -1303,7 +1299,7 @@ void EraseFixedMutations(int fixed, int block, int prev) {
 // Calculates Site Frequency Spectrum with Printing option for mutationNew
 // also prints SFS for blocks 0, 1 and 2
 // also calculates pi, S, eta, H
-float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
+float * SiteFrequencySpectrumPrint(int h, int block, int n) {
     int s = n;
     int p, i, j, k, index, m, number, duplicationFreq;
     int xi[2 * s], list [2 * N];
@@ -1428,11 +1424,11 @@ float * SiteFrequencySpectrumPrint(int h, int block, int n, bool does_print) {
 
 
 // CALCULATES SFS COLLAPSING BLOCKS 0 & 2 FOR WHOLE POP AND FOR A SAMPLE
-// PARAMETERS ARE h and SAMPLE SIZE nn and boolean does_print. IF SAMPLE SIZE IS N EVERYTHING IS TREATEAD
+// PARAMETERS ARE h and SAMPLE SIZE nn. IF SAMPLE SIZE IS N EVERYTHING IS TREATEAD
 // FOR WHOLE POP, OTHERWISE, IT USES THE SAMPLE
 // PERFORMS ALL CALCULATIONS TAKING ONLY THE FIRST HALF OF THE SAMPLE AND TAKING BLOCKS 0 & 2 FROM EACH CHROMOSOME
 
-float * SiteFrequencySpectrum_02(int h, int nn, bool does_print) { // Collapsed
+float * SiteFrequencySpectrum_02(int h, int nn) { // Collapsed
     int n, p, i, j, index, m, number, block, blockCount = nn;
     int mutationCountsTemp;
     int xi[2 * nn], list[2 * N];
@@ -1518,7 +1514,7 @@ float * SiteFrequencySpectrum_02(int h, int nn, bool does_print) { // Collapsed
     return results;
 }
 
-float * SiteFrequencySpectrum_02_Calling(int h, int nn, bool does_print) { // Collapsed
+float * SiteFrequencySpectrum_02_Calling(int h, int nn) { // Collapsed
     int n, p, i, j, index, m, number, blockCount = 2 * nn;
     int mutationCountsTemp;
     int xi[2 * nn], list[2 * N];

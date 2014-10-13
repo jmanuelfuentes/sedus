@@ -484,8 +484,8 @@ void MainWindow::handleButton()
         ui->progressBar->setValue(0);
         ui->progressBar->setVisible(true);
     }
-    ui->customPlot->setVisible(true);
-    ui->customPlot->clearGraphs();
+ //   ui->customPlot->setVisible(true);
+ //   ui->customPlot->clearGraphs();
     ui->log->setVisible(true);
     ui->m_button->setEnabled(false);
     ui->stop->setEnabled(true);
@@ -587,6 +587,8 @@ void MainWindow::handleButton()
     }*/
 
     //chart
+    ui->customPlot->setVisible(true);
+    ui->customPlot->clearGraphs();
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setFont(QFont("Helvetica",9));
     ui->customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignLeft|Qt::AlignTop);
@@ -645,15 +647,16 @@ void MainWindow::handleButton()
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->snapshots->text().toInt())/1000);
-    ui->customPlot->yAxis->setRange(0, 20);
+    ui->customPlot->yAxis->setRange(0, 15);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
-    ui->customPlot->yAxis->setLabel("Average pairwise differences");
     if(ui->plotpi->isChecked()){
+        ui->customPlot->yAxis->setLabel("Average pairwise differences (π)");
         ui->customPlot->graph(0)->setData(x[0], y[0]);
         ui->customPlot->graph(1)->setData(x[1], y[1]);
         ui->customPlot->graph(2)->setData(x[2], y[2]);
     }
     if(ui->plotS->isChecked()){
+        ui->customPlot->yAxis->setLabel("Watterson estimator (θw)");
         ui->customPlot->graph(0)->setData(x[0], y[3]);
         ui->customPlot->graph(1)->setData(x[1], y[4]);
         ui->customPlot->graph(2)->setData(x[2], y[5]);
