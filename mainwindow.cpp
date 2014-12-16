@@ -66,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     centerWidget();
     connect(ui->m_button, SIGNAL(released()), this, SLOT(handleButton()));
     connect(ui->stop, SIGNAL(released()), this, SLOT(stop()));
+    connect(ui->Default, SIGNAL(released()), this, SLOT(RestDefault()));
     connect(ui->hotspots, SIGNAL(valueChanged(int)), this, SLOT(hotspots(int)));
     connect(ui->R, SIGNAL(textChanged(const QString)), this, SLOT(changeR(const QString)));
     connect(ui->pushButton_dir, SIGNAL(released()), this, SLOT(dirButton()));
@@ -74,7 +75,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->total_slider, SIGNAL(valueChanged(int)), this, SLOT(setTotal(int)));
     connect(ui->fixlinearRadioButton, SIGNAL(toggled(bool)), this, SLOT(setFixLinearSliderVisible()));
     connect(ui->N, SIGNAL(textChanged(const QString)), this, SLOT(changeNdependecies(const QString)));
-    connect(ui->snapshots, SIGNAL(textChanged(const QString)), this, SLOT(changeGenerationsDependecies(const QString)));
+//    connect(ui->snapshots, SIGNAL(textChanged(const QString)), this, SLOT(changeGenerationsDependecies(const QString)));
     connect(this, SIGNAL(setMinimum(double,int)), this, SLOT(changeMinimum(double,int)));
     connect(this, SIGNAL(setMaximum(double,int)), this, SLOT(changeMaximum(double,int)));
     connect(ui->b1, SIGNAL(valueChanged(double)), this, SLOT(setMinimumE1(double)));
@@ -117,11 +118,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lambda->setText("100");
     ui->meps->setText("0");
     ui->C->setText("1");
-    //ui->donor->setText("0.5");
     ui->donor_spin->setValue(0.5);
 
     //params crossover
-    ui->R->setText("1");
+    ui->R->setText("10");
     ui->hot1->setVisible(true);
     ui->hot2->setVisible(false);
     ui->hot3->setVisible(false);
@@ -379,6 +379,42 @@ void MainWindow::stop(){
     //ui->customPlot->setEnabled(false);
 }
 
+void MainWindow::RestDefault(){
+    ui->runs->setText(QString::number(10));
+    ui->samplesize->setText(QString::number(50));
+    ui->snapshots->setText(QString::number(1000));
+
+    ui->N->setText(QString::number(1000));
+    ui->theta->setText(QString::number(0.001));
+    ui->blocklength->setText(QString::number(5000));
+    ui->radioButton->setChecked(true);
+    ui->fixgroupslider->setVisible(false);
+    ui->burnin_slider->setValue(10);
+    ui->total_slider->setValue(20);
+    ui->fixlinearslider->setValue(4000);
+
+    ui->C->setText(QString::number(1));
+    ui->lambda->setText(QString::number(100));
+    ui->meps->setText(QString::number(0));
+    ui->donor_spin->setValue(0.5);
+
+    ui->R->setText(QString::number(10));
+    ui->hotspots->setValue(1);
+    ui->rate1->setValue(1);
+    ui->e1->setValue(3);
+    ui->b1->setValue(0);
+
+    ui->plotpi->setChecked(true);
+    ui->plotS->setChecked(false);
+    ui->proffile->setChecked(true);
+    ui->pifile->setChecked(true);
+    ui->Sfile->setChecked(true);
+    ui->mutfile->setChecked(true);
+    ui->SFSfile->setChecked(true);
+
+
+}
+
 void MainWindow::quitWork(){
     thread->quit();
     thread->wait();
@@ -507,8 +543,8 @@ void MainWindow::handleButton()
     params.main.N = ui->N->text().toInt();
     params.main.theta = ui->theta->text().toDouble();
     params.main.blocklenght = ui->blocklength->text().toInt();
-    params.main.burnin = ui->burnin_slider->value();
-    params.main.total = ui->total_slider->value();
+    params.main.burnin = ui->burnin_label->text().toInt();
+    params.main.total = ui->total_label_2->text().toInt();
     if(ui->fixlinearRadioButton->isChecked()){
         params.main.israndom = false;
         params.main.fixation_linear = ui->fixlinearlabel->text().toFloat();
@@ -569,7 +605,7 @@ void MainWindow::handleButton()
     }else{
         params.plot.piorS = false;
     }
-
+    initmuN = ui->theta->text().toFloat()*ui->N->text().toInt();
 
     #ifdef _WIN32
         // replace(argv[7], "\\", "\\\\");
@@ -587,7 +623,7 @@ void MainWindow::handleButton()
     }*/
 
     //chart
-    ui->customPlot->setVisible(true);
+ //   ui->customPlot->setVisible(true);
     ui->customPlot->clearGraphs();
     ui->customPlot->legend->setVisible(true);
     ui->customPlot->legend->setFont(QFont("Helvetica",9));
@@ -607,11 +643,13 @@ void MainWindow::handleButton()
     ui->customPlot->graph(3)->setName("O+D");
     ui->customPlot->graph(3)->setPen(QPen(Qt::blue));
     */
+
     ui->customPlot->xAxis2->setVisible(true);
     ui->customPlot->xAxis2->setTickLabels(false);
     ui->customPlot->yAxis2->setVisible(true);
     ui->customPlot->yAxis2->setTickLabels(false);
       // make left and bottom axes always transfer their ranges to right and top axes:
+ //   ui->customPlot->yAxis->setRange(0, ui->theta->text().toInt()*8*ui->N->text().toInt());
     connect(ui->customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->xAxis2, SLOT(setRange(QCPRange)));
     connect(ui->customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)), ui->customPlot->yAxis2, SLOT(setRange(QCPRange)));
       // pass data points to graphs:
@@ -646,8 +684,9 @@ void MainWindow::handleButton()
 
 void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
+    ui->customPlot->setVisible(true);
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->snapshots->text().toInt())/1000);
-    ui->customPlot->yAxis->setRange(0, 15);
+    ui->customPlot->yAxis->setRange(0, initmuN*10);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
     if(ui->plotpi->isChecked()){
         ui->customPlot->yAxis->setLabel("Average pairwise differences (π)");
@@ -693,55 +732,41 @@ void MainWindow::setFixLinearText(int value){
 }
 
 void MainWindow::setBurnin(int value){
-    ui->burnin_label->setText(QString::number(value));
-    ui->total_slider->setMinimum(ui->burnin_slider->value()+20*ui->N->text().toInt());
-    ui->total_slider->setMaximum(ui->N->text().toInt()*1000);
+    int tmp_burnin = ui->N->text().toInt()*value;
+    ui->burnin_label->setText(QString::number(tmp_burnin));
+    int tmp_total = (20+value+ui->total_slider->value())*ui->N->text().toInt();
+    ui->total_label_2->setText(QString::number(tmp_total));
 }
 
 void MainWindow::setTotal(int value){
-    ui->total_label_2->setText(QString::number(value));
+    int tmp_total = (20+ui->burnin_slider->value()+value)*ui->N->text().toInt();
+    ui->total_label_2->setText(QString::number(tmp_total));
 }
 
 void MainWindow::setFixLinearSliderVisible(){
     if (ui->fixlinearRadioButton->isChecked()){
-        ui->fixlinearslider->setMaximum(20*(ui->N->text().toInt()));
-        ui->fixlinearslider->setMinimum(1);
-        ui->fixlinearslider->setValue(1*(ui->N->text().toInt()));
         ui->fixgroupslider->setVisible(true);
+        ui->fixlinearslider->setValue(4*ui->N->text().toInt());
     }else{
         ui->fixgroupslider->setVisible(false);
     }
 }
 void MainWindow::changeNdependecies(const QString &value){
-    ui->fixlinearslider->setMaximum(20*(ui->N->text().toInt()));
-    ui->fixlinearslider->setMinimum(1);
-    ui->fixlinearslider->setValue(1*(value.toInt()));
+    ui->fixlinearslider->setMaximum(20*ui->N->text().toInt());
+    ui->fixlinearlabel->setText(QString::number(ui->fixlinearslider->value()));
 
-    //ui->burnin_slider->setMaximum(50*(ui->N->text().toInt()));
-    ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-    ui->burnin_slider->setMinimum(ui->snapshots->text().toInt());
-    ui->burnin_slider->setValue(30*(value.toInt()));
-    ui->burnin_slider->setSingleStep(ui->snapshots->text().toInt());
+    int tmp_burnin = value.toInt()*ui->burnin_slider->value();
+    ui->burnin_label->setText(QString::number(tmp_burnin));
+    int tmp_total = value.toInt()*(ui->burnin_slider->value()+20+ui->total_slider->value());
+    ui->total_label_2->setText(QString::number(tmp_total));
 
-    //ui->total_slider->setMaximum(1000*(ui->N->text().toInt()));
-    ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-    ui->total_slider->setMinimum(ui->burnin_slider->value()+20*ui->N->text().toInt());
-    ui->total_slider->setValue(130*(value.toInt()));
-    ui->total_slider->setSingleStep(ui->snapshots->text().toInt());
 }
-void MainWindow::changeGenerationsDependecies(const QString &value){
-    if(value.toInt()>0){
-        ui->burnin_slider->setMaximum((50*(ui->N->text().toInt()))-(50*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-        ui->burnin_slider->setMinimum(value.toInt());
-        ui->burnin_slider->setSingleStep(value.toInt());
-        ui->burnin_slider->setValue((30*(ui->N->text().toInt()))-(30*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-        ui->total_slider->setMaximum((1000*(ui->N->text().toInt()))-(1000*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-        ui->total_slider->setSingleStep(value.toInt());
-        ui->total_slider->setValue((130*(ui->N->text().toInt()))-(130*(ui->N->text().toInt())%ui->snapshots->text().toInt()));
-    }else{
+//void MainWindow::changeGenerationsDependecies(const QString &value){
+//    if(value.toInt()>0){
+//    }else{
         //ui->snapshots->setText("1000");
-    }
-}
+//    }
+//}
 
 void MainWindow::changeR(const QString &value){
     /*if(value.compare("")==0){

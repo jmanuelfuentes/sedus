@@ -64,6 +64,7 @@ public:
 private slots:
     void handleButton();
     void stop();
+    void RestDefault();
     void dirButton();
     void centerWidget();
     void setLog(const QString &value);
@@ -74,7 +75,7 @@ private slots:
     void setTotal(int value);
     void setFixLinearSliderVisible();
     void changeNdependecies(const QString &value);
-    void changeGenerationsDependecies(const QString &value);
+//    void changeGenerationsDependecies(const QString &value);
     void changeR(const QString &value);
     void quitWork();
     void hotspots(int value);
@@ -107,6 +108,7 @@ private:
     bool checkN();
     bool uidelete;
     double sumratiohots;
+    int initmuN;
     //QPushButton *m_button;
 };
 

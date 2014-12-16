@@ -60,7 +60,8 @@ OTHER_FILES += \
     img/stop.png \
     img/sedus.ico \
     COPYING \
-    img/blocks.png
+    img/blocks.png \
+    img/default.png
 
 QMAKE_CXXFLAGS += -std=c++11
 
