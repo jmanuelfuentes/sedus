@@ -107,8 +107,8 @@ private:
     bool checkGenerations();
     bool checkN();
     bool uidelete;
-    double sumratiohots;
-    int initmuN;
+    float sumratiohots;
+    int initTHETA;
     //QPushButton *m_button;
 };
 

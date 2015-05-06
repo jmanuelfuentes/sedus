@@ -485,11 +485,10 @@ bool MainWindow::checkRateHotSopts(){
 
         }
         case 5:{
-            sumratiohots=(ui->rate1->value()+ui->rate2->value()+ui->rate3->value()+ui->rate4->value()+ui->rate4->value());
+            sumratiohots=(ui->rate1->value()+ui->rate2->value()+ui->rate3->value()+ui->rate4->value()+ui->rate5->value());
             if(sumratiohots!=1) return false;
             break;
         }
-
      }
     return true;
 }
@@ -605,7 +604,7 @@ void MainWindow::handleButton()
     }else{
         params.plot.piorS = false;
     }
-    initmuN = ui->theta->text().toFloat()*ui->N->text().toInt();
+    initTHETA = ui->theta->text().toFloat()*ui->blocklength->text().toInt();
 
     #ifdef _WIN32
         // replace(argv[7], "\\", "\\\\");
@@ -686,7 +685,7 @@ void MainWindow::setChart(const qvdouble &x,const qvdouble &y){
 
     ui->customPlot->setVisible(true);
     ui->customPlot->xAxis->setRange(0, (x[0].length()*ui->snapshots->text().toInt())/1000);
-    ui->customPlot->yAxis->setRange(0, initmuN*10);
+    ui->customPlot->yAxis->setRange(0, initTHETA*2.1);
     ui->customPlot->xAxis->setLabel("Thousands of generations");
     if(ui->plotpi->isChecked()){
         ui->customPlot->yAxis->setLabel("Average pairwise differences (π)");
