@@ -493,6 +493,7 @@ bool MainWindow::checkRateHotSopts(){
     return true;
 }
 
+
 void MainWindow::handleButton()
 {
     typedef QVector<QVector<double>> qvdouble;
