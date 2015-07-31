@@ -109,6 +109,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //params main
     ui->N->setText("1000");
+    ui->sameChr->setChecked(true);
     ui->radioButton->setChecked(true);
     ui->fixgroupslider->setVisible(false);
     ui->theta->setText("0.001");
@@ -119,6 +120,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->meps->setText("0");
     ui->C->setText("1");
     ui->donor_spin->setValue(0.5);
+    ui->w_samedif->setValue(1);
 
     //params crossover
     ui->R->setText("10");
@@ -392,11 +394,13 @@ void MainWindow::RestDefault(){
     ui->burnin_slider->setValue(10);
     ui->total_slider->setValue(20);
     ui->fixlinearslider->setValue(4000);
+    ui->sameChr->setChecked(true);
 
     ui->C->setText(QString::number(1));
     ui->lambda->setText(QString::number(100));
     ui->meps->setText(QString::number(0));
     ui->donor_spin->setValue(0.5);
+    ui->w_samedif->setValue(1);
 
     ui->R->setText(QString::number(10));
     ui->hotspots->setValue(1);
@@ -533,16 +537,21 @@ void MainWindow::handleButton()
 
     sedus::parameters params;
     //main window
-    params.id = ui->id->text().toLocal8Bit().data();
     params.dir = ui->dir->text().toLocal8Bit().data();
     //params exec
     params.exec.runs = ui->runs->text().toInt();
     params.exec.sample_size = ui->samplesize->text().toInt();
     params.exec.snapshots = ui->snapshots->text().toInt();
+    params.exec.id = ui->id->text().toLocal8Bit().data();
     //params main
     params.main.N = ui->N->text().toInt();
     params.main.theta = ui->theta->text().toDouble();
-    params.main.blocklenght = ui->blocklength->text().toInt();
+    params.main.blocklength = ui->blocklength->text().toInt();
+    if(ui->sameChr->isChecked()){
+        params.main.dupType = true;
+    }else{
+        params.main.dupType = false;
+    }
     params.main.burnin = ui->burnin_label->text().toInt();
     params.main.total = ui->total_label_2->text().toInt();
     if(ui->fixlinearRadioButton->isChecked()){
@@ -563,6 +572,7 @@ void MainWindow::handleButton()
     params.igc.donor = ui->donor_spin->value();
     params.igc.lambda = ui->lambda->text().toInt();
     params.igc.MEPS = ui->meps->text().toInt();
+    params.igc.w_samedif = ui->w_samedif->value();
     //params crossover
     params.crossover.R = ui->R->text().toFloat();
     if(params.crossover.R!=float(0)){
@@ -662,7 +672,7 @@ void MainWindow::handleButton()
     worker = new sedus(&params);
     //worker = new sedus();
     worker->moveToThread(thread);
-    connect(worker, SIGNAL(valueChanged(QString)), ui->label, SLOT(setText(QString)));
+//    connect(worker, SIGNAL(valueChanged(QString)), ui->label, SLOT(setText(QString)));
     connect(worker, SIGNAL(workRequested()), thread, SLOT(start()));
     connect(thread, SIGNAL(started()), worker, SLOT(dowork()));
     connect(worker, SIGNAL(finished()), this, SLOT(quitWork()));

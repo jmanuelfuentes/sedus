@@ -133,9 +133,11 @@ float mu; // Mutation rate per nucleotide and generation
 float rho; // Crossover rate per nucleotide and generation
 float meanTractLength = 100; // Mean Gene Conversion Tract Length (lambda)
 float kappa; // Gene Conversion Initiation Rate
-float numbptotalidentity = 0; // Length of the 100% identity tract
-float IdentityInConvTract = 0; // Percent of identity required for conversion in all conversion tract
-float donorRatio = 0.5; // Percentage of gene conversion events that occur from the original to the duplicated block
+float meps = 0; // Length of the 100% identity tract
+float similarityInConvTract = 0; // Percent of similarity required for conversion in all conversion tract
+float donorRatio = 0.5; // Proportion of IGC events that occur from the original to the duplicated block
+float sameDifIGC = 1; // Proportion of IGC events that occur between copies in the same chromosome (1- between copies in homologous chromosomes)
+bool dupType = 1; // Duplication mechanism: 0 = to the same chromosome / 1 = to the partner chromosome
 
 //// GENEALOGICAL MATRICES ////
 
@@ -146,11 +148,7 @@ std::vector<std::vector<bool>> fertility;// Boolean Matrix codifying if a chromo
 std::vector<std::vector<bool>> fertility_ini;//Matrix fertility initialization
 std::vector<std::vector<bool>> recombimatrix;// Boolean Matrix codifying if a chromosome comes from a recent recombination or not (has one or two parents)
 std::vector<std::vector<int>> duplicontent;// Array indicating which chr carry the duplication (with present and previous lines)
-//int ancestry[2 * N][PROMETHEUS];
-//bool fertility[2 * N][PROMETHEUS];
-//bool fertility_ini[2 * N][PROMETHEUS];
-//bool recombimatrix[2 * N][PROMETHEUS];
-//int duplicontent[2][2 * N];
+std::vector<std::vector<bool>> IGCmatrix;// Boolean Matrix codifying if a chromosome comes from a recent IGC or not
 
 //// GLOBAL VARIABLES AND STATISTICAL QUANTITIES ////
 //chrom table[4 * N], *pointer[2][2 * N]; // GENOMIC INFORMATION
@@ -204,18 +202,18 @@ bool SFS_f = true;
 ///////////////////
 
 struct prev_pres phaseI();
-int phaseII(int,int,int);
-void phaseIII();
+int phaseII(int,int,int,bool, float);
+void phaseIII(float);
 
 void open_files(); // Opening files
 void close_files(); // Closing files
 
-void genealogy(float, int); // rho, 0/1(non structured or structured) //// Filling genealogy matrices in each PROMETHEUS
+void genealogy(float, int, float); // rho, 0/1(non structured or structured) //// Filling genealogy matrices in each PROMETHEUS
 void parentpicking(int[maxNumOfHS], int[maxNumOfHS], float[maxNumOfHS], int, int, int,int,int); // crossoverBegin, crossoverEnd //// Create new generation from previous one (with recombination)
 
-void duplication(int,int); // Create Duplication for eva (first duplicated chromosome)
+void duplication(int,int, bool); // Create Duplication for eva (first duplicated chromosome)
 void mutation(float, int, int); // For each fertile chromosome decide if a mutation happens and execute it if necessary
-void conversion(float, int, int, float); // Only when duFreq is true. For each fertile chromosome decide if conversion happens and execute it if necessary
+void conversion(float, int, int, int, float, float); // Only when duFreq is true. For each fertile chromosome decide if conversion happens and execute it if necessary
 
 void statistics(int, int); // Execution of all the statistic calculations (for each Era)
 void FSL(int); // Count of All the Segregating, Fixed, Lost and Shared sites
@@ -246,7 +244,6 @@ int tractpql(float); // Returns a given random tract length from the mean tract 
 void SamplingIndividuals(int); // Sample corresponding number of individuals (register their number in sample[])
 
 int GenerateFixationTrajectory(int, int); // Generates fixation trajectory of the duplication (fixed or not)
-;
 //void initialize_fertility_matrix(bool[2*N][PROMETHEUS]);
 //void printMutationsFromSample(int, int, int); // Print Mutations of a sample in mutations file
 void print_fertility();
@@ -262,6 +259,8 @@ int maxim(int n1, int n2) {
     if (n1 < n2) { return n2;}
     else { return n1; }
 }
+bool sortx (fertility_info,fertility_info);
+bool sorty (fertility_info,fertility_info);
 
 //////////////
 //// MAIN ////
@@ -280,61 +279,6 @@ qvdouble arry6;
 
 
 void sedus::dowork() {
-    // Reading command line arguments
-    //bool fertility[2 * N][PROMETHEUS]
-    /*
-    using namespace std;
-    //clock_t begin = clock();
-    cout << "hola" << "\n";
-    log->append("SUPERTIME \n");
-    letter = argv[1];
-    float argR; sscanf (argv[2],"%f",&argR); R = argR;
-    rho = R / (4 * N);
-    float argC; sscanf (argv[3],"%f",&argC); C = argC;
-    kappa = C / (4 * N * meanTractLength);
-    int sup; sscanf (argv[4],"%d",&sup);
-    #undef SUPERTIME
-    #define SUPERTIME sup
-    float timeToFixationFloat; sscanf (argv[5],"%f",&timeToFixationFloat);
-    cout << timeToFixationFloat << "\n";
-    int timeToFixation = (int) (timeToFixationFloat * N); // timeToFixation must be >= 1
-    cout << timeToFixation << "\n";
-    float argDonorRatio; sscanf (argv[6], "%f", &argDonorRatio);
-    donorRatio = argDonorRatio;
-
-
-    correctArguments = 0;
-    if (string(argv[7]) == "SC"){
-        if (argc == 8){
-            crossoverBegin[0] = BLOCKLENGTH;
-            crossoverEnd[0] = 2*BLOCKLENGTH;
-            correctArguments = 1;
-        }
-    }
-    else if (string(argv[7]) == "WR"){
-        if (argc == 8){
-            crossoverBegin[0] = 1;
-            crossoverEnd[0] = B*BLOCKLENGTH;
-            correctArguments = 1;
-        }
-    }
-    else if (string(argv[7]) == "HS"){
-        if (argc > 8){
-            int num; sscanf (argv[7],"%d",&num);
-            numHS = num;
-            if (argc == (8+numHS*2)){
-                correctArguments = 1;
-                for (int HS = 0; HS < numHS; HS++) {
-                    int Beg; int End;
-                    sscanf (argv[8+HS*2],"%d",&Beg); sscanf (argv[9+HS*2],"%d",&End);
-                    crossoverBegin[HS] = Beg;
-                    crossoverEnd[HS] = End;
-                }
-            }
-        }
-    }
-    */
-    cout<<"N: "<<N<<endl;
     #undef SUPERTIME
     #define SUPERTIME sup
     perc=0;
@@ -382,7 +326,7 @@ void sedus::dowork() {
         if(prof_f==true){
             profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << THETA << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
             if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
-            profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << numbptotalidentity  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
+            profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << meps  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
             for (j = 0; j < numHS; j++) {
                 profile  << "Crossover region number " << j << ": // st: " << crossoverBegin[j] << " // end: " << crossoverEnd[j] << " // frac: " << crossoverFrac[j] << "\n";
             }
@@ -444,15 +388,15 @@ void sedus::dowork() {
             /*  PHASE II: STRUCTURED TRAJECTORY  */
             cout << "PHASE II" << endl;
             setLog(QString::fromStdString("\tPHASE II"));
-            //endTime=phaseII(timeToFixation,ret.prev,ret.pres);
-            phaseII(timeToFixation,ret.prev,ret.pres);
+            //endTime=phaseII(timeToFixation,ret.prev,ret.pres, dupType);
+            phaseII(timeToFixation,ret.prev,ret.pres, dupType, kappa);
             if(_abort)break;
             /* END PHASE II */
 
             /*  PHASE III: RESOLUTION  */
             cout << "PHASE III" << endl;
             setLog(QString::fromStdString("\tPHASE III"));
-            phaseIII();
+            phaseIII(kappa);
             if(_abort)break;
             /* END PHASE III */
 
@@ -464,15 +408,6 @@ void sedus::dowork() {
 
             qRegisterMetaType<qvdouble>("qvdouble");
             setChart(x,y);
-            /*qvdouble x(250), y(250);
-            for (int i=0; i<250; ++i)
-              {
-                x[i] = i;
-                y[i] = run+exp(-i/150.0)*cos(i/10.0); // exponentially decaying cosine
-                //y1[i] = exp(-i/150.0);             // exponential envelope
-              }*/
-
-
          //   auxx << endTime <<"\n";
             double tEnd0= (double)(clock() - tStart0)/CLOCKS_PER_SEC;
             totaltime = totaltime+tEnd0;
@@ -509,11 +444,12 @@ struct sedus::prev_pres sedus::phaseI(){
         //perc+=iterperc;
         //probar->setValue(int(perc+=iterperc));
         setBar(int(perc+=iterperc));
-        genealogy(rho, 0);// GENEALOGY (filling recombimatrix, ancestry and fertility matrices, determines all population genealogy)
+        genealogy(rho*BLOCKLENGTH, 0, 0);// GENEALOGY (filling recombimatrix, ancestry and fertility matrices, determines all population genealogy)
         int prom=-1;
         prev = 0;
         pres = 1;
-        for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
+        for (std::vector<fertility_info>::iterator it=fertility_list.begin(); it!=fertility_list.end(); ++it){
+ //       for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
             int i = (*it).x;
             int t = (*it).y;
             if(prom!=t){
@@ -531,10 +467,10 @@ struct sedus::prev_pres sedus::phaseI(){
     return ret;
 }
 
-int sedus::phaseII(int timeToFixation,int prev, int pres){
+int sedus::phaseII(int timeToFixation,int prev, int pres, bool dupType, float k){
     // Generating Fixation Trajectory in a diploid population
                 int endTime = GenerateFixationTrajectory(STRUCTURED + 1, timeToFixation);
-                cout << endTime << endl;
+               // cout << endTime << endl;
                 // Picking the first chromosome with the duplication (eva)
                 int eva = (int) (rand() % (2 * N));
                 for (int i = 0; i < 2 * N; i++) {
@@ -544,7 +480,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                 duplicontent[1][0] = eva;
                 duplicontent[1][eva] = 0;
                 // Duplicate eva (create a new block with old mutations...)
-                duplication(eva,pres);
+                duplication(eva, pres, dupType);
                 duFreq = true;
 
                 // BURNIN/PROMETHEUS -> (BURNIN+STRUCTURED)/PROMETHEUS (30 -> 50)
@@ -554,20 +490,30 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
                     // GENEALOGY (with recombination and taking into account that duplicated chr have duplicated ancestor)
-                    genealogy(rho, 1);
+                    genealogy(rho*BLOCKLENGTH, 1, (2 * k * BLOCKLENGTH));
                     int prom=-1;
                     prev = 0;
                     pres = 1;
-                    for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
-                            int i = (*it).x;
-                            int t = (*it).y;
-                            if(prom!=t){
-                                    if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
-                            }
-                            prom = t;
+                    bool skip = false;
+                    for (std::vector<fertility_info>::iterator it=fertility_list.begin(); it!=fertility_list.end(); ++it){
+//                    for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
+                        int i = (*it).x;
+                        int t = (*it).y;
+                        if(prom!=t){
+                            if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
+                        }
+                        prom = t;
+                        if(skip == false){
                             parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
                             mutation(mu, i,pres);// MUTATION and CONVERSION (for each fertile chromosome)
-                            conversion(kappa, i, pres, donorRatio);
+                            if(IGCmatrix[i][t]==true && (i%2 == 0)){
+                                skip = true;
+                                int otheri = i+1;
+                                parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,otheri,t);// PARENT PICKING (with recombination)
+                                mutation(mu, otheri,pres);// MUTATION and CONVERSION (for each fertile chromosome)
+                            }
+                            conversion(kappa, t, i, pres, donorRatio, sameDifIGC);
+                        }else {skip = false;}
                     }
                     // CALCULATE THE STATISTICS
                     statistics(pres, era);
@@ -575,7 +521,7 @@ int sedus::phaseII(int timeToFixation,int prev, int pres){
        return endTime;
 }
 
-void sedus::phaseIII(){
+void sedus::phaseIII(float k){
     double timefortotal=0.0;
     double timestatstotal=0.0;
     for (era = (int) (BURNIN + STRUCTURED) / PROMETHEUS; era < (int) TIMELENGTH / PROMETHEUS; era++) {
@@ -584,21 +530,31 @@ void sedus::phaseIII(){
                     //probar->setValue(int(perc+=iterperc));
                     setBar(int(perc+=iterperc));
                     // GENEALOGY (all chr have the duplication, there are no two populations to take into account)
-                    genealogy(rho, 0);
+                    genealogy(rho*BLOCKLENGTH, 0, (2 * k * BLOCKLENGTH));
                     int prom=-1;
                     int prev = 0;
                     int pres = 1;
                     clock_t tStart1 = clock();
-                    for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
+                    bool skip = false;
+                    for (std::vector<fertility_info>::iterator it=fertility_list.begin(); it!=fertility_list.end(); ++it){
+ //                   for (std::vector<fertility_info>::iterator it = fertility_list.end()-1 ; it != fertility_list.begin()-1; --it){
                         int i = (*it).x;
                         int t = (*it).y;
                         if(prom!=t){
                             if (prev == 1) {prev = 0;pres = 1;} else {prev = 1;pres = 0;}
                         }
                         prom = t;
-                        parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS, prev,pres,i,t);
-                        mutation(mu, i,pres);
-                        conversion(kappa, i,pres, donorRatio);
+                        if(skip == false){
+                            parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,i,t);// PARENT PICKING (with recombination)
+                            mutation(mu, i,pres);// MUTATION and CONVERSION (for each fertile chromosome)
+                            if(IGCmatrix[i][t]==true && (i%2 == 0)){
+                                skip = true;
+                                int otheri = i+1;
+                                parentpicking(crossoverBegin, crossoverEnd, crossoverFrac, numHS,prev,pres,otheri,t);// PARENT PICKING (with recombination)
+                                mutation(mu, otheri,pres);// MUTATION and CONVERSION (for each fertile chromosome)
+                            }
+                            conversion(kappa, t, i, pres, donorRatio, sameDifIGC);
+                        }else {skip = false;}
                     }
                     double timefor= (double)(clock() - tStart1)/CLOCKS_PER_SEC;
                     timefortotal=timefortotal+timefor;
@@ -690,22 +646,25 @@ void close_files() { // Closes write-on files
 ////  GENEALOGY & STRUCTURED GENEALOGY  ////
 ////////////////////////////////////////////
 
-void genealogy(float probability, int strornot) { // Generates the genealogy based on the FixationTrajectory (with RECOMBINATION)
+void genealogy(float probability, int strornot, float IGCprobability) { // Generates the genealogy based on the FixationTrajectory (with RECOMBINATION)
     // Determine recombination processes (with probability "probability")
     for (int tt=0 ; tt < PROMETHEUS ; tt++){
         for (int i=0 ; i < 2*N ; i++){
-            recombimatrix[i][tt] = false;
+                recombimatrix[i][tt] = false;
+                    IGCmatrix[i][tt] = false;
         }
     }
 
     // STRUCTURED GENEALOGY (the population is subdivided in 2: one that carries the duplication, built according to trajectime, and the other not carrying the duplication
     if (strornot == 1){
+       //cout << "entra a strornot\n";
         // Pick a parent from the corresponding duplicated/non-duplicated population
         int present=0;
         int previous=1;
         for (int tt=0 ; tt < PROMETHEUS ; tt++){
             // trajectime is the time in which we are in fixationTrajectory[] array (used to know the number of chr that carry the dup at each time)
             int trajectime = PROMETHEUS*(era-((int)BURNIN/PROMETHEUS))+tt+1;
+            //cout << "trajectime = " << trajectime << "\n";
             // Randomly mix all the chromosomes of the present generation
             for(int i=0 ; i < 2*N ; i++){
                  int val = (int) (rand()%(2*N));
@@ -715,17 +674,22 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
                  duplicontent[present][val] = temp;
             }
             // For all the chr that have to have the duplication at this time...
+            //cout << "entra a strornot 2\n";
             for(int i=0 ; i < fixationTrajectory[trajectime] ; i++){
                 // Choose a father randomly (from the previous duplicated population)
                 int val=(int) (rand()%(fixationTrajectory[trajectime-1]));
+            //cout << "fixationTrajectory[trajectime-1] = " << fixationTrajectory[trajectime-1] << ", trajectime = " << trajectime << "\n";
+                //cout << "val = " << val << "\n";
                 ancestry[duplicontent[present][i]][tt] = duplicontent[previous][val];
             }
+            // cout << "entra a strornot 3\n";
             // For all the chr that have not to have the duplication at this time...
             for(int i=fixationTrajectory[trajectime] ; i < 2*N ; i++){
                 // Choose a father randomly (from the previous non-duplicated population)
                 int val = (int) (rand()%(2*N-fixationTrajectory[trajectime-1])) + fixationTrajectory[trajectime-1];
                 ancestry[duplicontent[present][i]][tt] = duplicontent[previous][val];
             }
+            // cout << "sale de strornot 3\n";
             if (previous==1) {previous=0;  present=1;} else {previous=1;  present=0;}
         }
     }
@@ -738,27 +702,10 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
             }
         }
     }
-
+    // cout << "antes de fertility_ini\n";
     // TRACING BACK THE GENEALOGY AND BUILDING FERTILITY MATRIX
-   // std::copy(std::begin(fertility_ini), std::end(fertility_ini), std::begin(fertility));
-    //fertility initialization
-
-    //memset(fertility, 0, sizeof(fertility[0][0]) * 2*N * PROMETHEUS);
-   // for (int tt=0 ; tt < PROMETHEUS ; tt++) { for (int i=0 ; i < 2*N ; i++){
-                    //	 cout << fertility[i][tt] << " ";} cout << "\n";} cout << "\n\n";
-
     //memcpy(fertility, fertility_ini, sizeof(fertility[0][0]) * 2*N * PROMETHEUS);
-    //fertility.swap(fertility_ini);
     fertility = fertility_ini;
-    //cout << fertility.size()<<endl;
-    //for (int i=0 ; i < 2*N ; i++){
-      //                  fertility[i][PROMETHEUS-1] = true;
-     // }
-                        //for (int tt=0 ; tt < PROMETHEUS ; tt++) { for (int i=0 ; i < 2*N ; i++){
-                            //      	    	 cout << fertility[i][tt] << " ";} cout << "\n";} cout << "\n\n";
-
-
-
     fertility_list.clear();
     for (int i=0 ; i < 2*N ; i++){
                 fertility_info fi;
@@ -766,10 +713,9 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
                 fi.y = (PROMETHEUS-1);
                 fertility_list.push_back(fi);
     }
-   for (int tt=PROMETHEUS-1 ; tt > 0 ; tt--){
+    for (int tt=PROMETHEUS-1 ; tt > 0 ; tt--){
         for (int i=0 ; i < 2*N ; i++){
             if (fertility[i][tt] == true){
-
                 if(fertility[ancestry[i][tt]][tt-1]==false){
                     fertility_info fi;
                     fi.x=(ancestry[i][tt]);
@@ -779,7 +725,6 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
                 fertility[ancestry[i][tt]][tt-1] = true;
                 float p = rand() / ((float) RAND_MAX + 1);// Determine recombination processes (with probability "probability")
                 if (p < probability){
-
                     recombimatrix[i][tt] = true;
                     if(ancestry[i][tt]%2==0) {
                         if(fertility[ancestry[i][tt]+1][tt-1]==false){
@@ -800,9 +745,72 @@ void genealogy(float probability, int strornot) { // Generates the genealogy bas
                         fertility[ancestry[i][tt]-1][tt-1]=true;
                     }
                 }
+
+
+                if((sameDifIGC!=1)){
+                    p = rand() / ((float) RAND_MAX + 1);// Determine recombination processes (with probability "probability")
+                    if (p < (IGCprobability * (1-sameDifIGC))){
+                        IGCmatrix[i][tt] = true;
+                        if(i%2==0) {
+                            if(fertility[i+1][tt]==false){
+                                fertility_info fi;
+                                fi.x=(i+1);
+                                fi.y=(tt);
+                                fertility_list.push_back(fi);
+                            }
+                            fertility[i+1][tt]=true;
+                        }else{
+                            if(fertility[i-1][tt]==false){
+                                fertility_info fi;
+                                fi.x=(i-1);
+                                fi.y=(tt);
+                                fertility_list.push_back(fi);
+
+                                fertility[i-1][tt]=true;
+
+                                if(fertility[ancestry[i-1][tt]][tt-1]==false){
+                                    fertility_info fi;
+                                    fi.x=(ancestry[i-1][tt]);
+                                    fi.y=(tt-1);
+                                    fertility_list.push_back(fi);
+                                }
+                                fertility[ancestry[i-1][tt]][tt-1] = true;
+
+                                p = rand() / ((float) RAND_MAX + 1);// Determine recombination processes (with probability "probability")
+                                if (p < probability){
+                                    recombimatrix[i-1][tt] = true;
+                                    if(ancestry[i-1][tt]%2==0) {
+                                        if(fertility[ancestry[i-1][tt]+1][tt-1]==false){
+                                            fertility_info fi;
+                                            fi.x=(ancestry[i-1][tt]+1);
+                                            fi.y=(tt-1);
+                                            fertility_list.push_back(fi);
+                                        }
+                                        fertility[ancestry[i-1][tt]+1][tt-1]=true;
+                                    }else {
+                                        if(fertility[ancestry[i-1][tt]-1][tt-1]==false){
+                                            fertility_info fi;
+                                            fi.x=(ancestry[i-1][tt]-1);
+                                            fi.y=(tt-1);
+                                            fertility_list.push_back(fi);
+                                        }
+                                        fertility[ancestry[i-1][tt]-1][tt-1]=true;
+                                    }
+                                }
+                                p = rand() / ((float) RAND_MAX + 1);// Determine recombination processes (with probability "probability")
+                                if (p < (IGCprobability * (1-sameDifIGC))){
+                                    IGCmatrix[i-1][tt] = true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
+    std::stable_sort (fertility_list.begin(), fertility_list.end(), sortx);
+    std::stable_sort (fertility_list.begin(), fertility_list.end(), sorty);
+
 }
 
 ////////////////////////////////////////////////////////////
@@ -911,16 +919,25 @@ void parentpicking(int crossBegin[maxNumOfHS], int crossEnd[maxNumOfHS], float f
 
 }
 
-void duplication(int i,int prev) {
+void duplication(int i,int prev, bool from) {
     int k;
     int tempMutCount = 0;
+    int adam = i;
 
+    if (from == 0) {
+            if (i % 2 == 0) {
+                adam = i + 1;
+            } else {
+                adam = i - 1;
+            }
+    }
+    
     if (pointer[prev][i][0].b == 2) {
         pointer[prev][i][0].b++;
     }
-    pointer[prev][i][0].mpb[2] = pointer[prev][i][0].mpb[0];
-    for (k = 0; k < pointer[prev][i][0].mpb[0]; k++) {
-        pointer[prev][i][0].mutation[2][k] = pointer[prev][i][0].mutation[0][k];
+    pointer[prev][i][0].mpb[2] = pointer[prev][adam][0].mpb[0];
+    for (k = 0; k < pointer[prev][adam][0].mpb[0]; k++) {
+        pointer[prev][i][0].mutation[2][k] = pointer[prev][adam][0].mutation[0][k];
     }
     for (k = 0; k < MutCount; k++) {
         if (muttable[k].block == 0) {
@@ -992,17 +1009,16 @@ void mutation(float probability, int i, int pres) {
 
 }
 
-void conversion(float probability, int i, int pres, float donorRatio) {
-    int k, donor, receptor, vald0, valdf, valr0, valrf, val, junction, tractlength, eqmut, otherk, differences;
+void conversion(float probability, int t, int i, int pres, float donorRatio, float sameDifIGC) {
+    int k, partner, donor, receptor, chrDonor, chrReceptor, IGC, vald0, valdf, valr0, valrf, val, junction, tractlength, eqmut, otherk, differences;
     float p;
-    chrom * chr;
-    chr = pointer[pres][i];
+    chrom * chr1, * chr2;
+    chr1 = pointer[pres][i];
+    IGC = 0;
     // If the chr has duplicated block
-    if (chr[0].b == 3) {
-        p = rand() / ((float) RAND_MAX + 1);
-
-        // GENE CONVERSION
-        if (p < (2 * probability * BLOCKLENGTH)) {
+    if (chr1[0].b == 3) {
+        if((sameDifIGC!=1) && (IGCmatrix[i][t]==true)){
+            IGC = 1;
             // Determines which block will be the donor and which will be the receptor
             p = rand() / ((float) RAND_MAX + 1);
             if (p < donorRatio) {
@@ -1012,6 +1028,50 @@ void conversion(float probability, int i, int pres, float donorRatio) {
                 donor = 2;
                 receptor = 0;
             }
+            if (i % 2 == 0) {
+                partner = (i + 1);
+            } else {
+                partner = (i - 1);
+            }
+            chr2 = pointer[pres][partner];
+            if (chr2[0].b == 3) {
+                p = rand() / ((float) RAND_MAX + 1);
+                if (p < 0.5) {
+                    chrDonor = i;
+                    chrReceptor = partner;
+                } else {
+                    chrDonor = partner;
+                    chrReceptor = i;
+                }
+            } else {
+                if(donor == 2){
+                    chrDonor = i;
+                    chrReceptor = partner;
+                } else {
+                    chrDonor = partner;
+                    chrReceptor = i;
+                }
+            }
+        }else{
+            p = rand() / ((float) RAND_MAX + 1);
+            if (p < (2 * probability * BLOCKLENGTH * sameDifIGC)) {
+                IGC = 1;
+                // Determines which block will be the donor and which will be the receptor
+                p = rand() / ((float) RAND_MAX + 1);
+                if (p < donorRatio) {
+                    donor = 0;
+                    receptor = 2;
+                } else {
+                    donor = 2;
+                    receptor = 0;
+                }
+                chrDonor = i;
+                chrReceptor = i;
+            }
+        }
+        if(IGC == 1){
+            chr1 = pointer[pres][chrDonor];
+            chr2 = pointer[pres][chrReceptor];
             // Determines conversion initiation point
             junction = (int) (rand() % (BLOCKLENGTH));
             // Determines gene conversion tract length through function tractpql()
@@ -1025,63 +1085,61 @@ void conversion(float probability, int i, int pres, float donorRatio) {
             }
 
             // Tests for MEPS, 100% identity tract to allow conversion
-            vald0 = location(junction - numbptotalidentity/2, pres, i, donor);
-            valdf = location(junction + numbptotalidentity/2, pres, i, donor);
-            valr0 = location(junction - numbptotalidentity/2, pres, i, receptor);
-            valrf = location(junction + numbptotalidentity/2, pres, i, receptor);
+            vald0 = location(junction - meps/2, pres, chrDonor, donor);
+            valdf = location(junction + meps/2, pres, chrDonor, donor);
+            valr0 = location(junction - meps/2, pres, chrReceptor, receptor);
+            valrf = location(junction + meps/2, pres, chrReceptor, receptor);
             val = (valdf - vald0)-(valrf - valr0); // val is the number of positions to shift
             eqmut = 0;
             // If the sequences have the same number of mutations in the total identity region
             if (val == 0){
                 for (k = 0; k < (valdf - vald0); k++) {
-                    if (chr[0].mutation[receptor][k + valr0] == chr[0].mutation[donor][k + vald0]){
+                    if (chr2[0].mutation[receptor][k + valr0] == chr1[0].mutation[donor][k + vald0]){
                         eqmut++;
                     }
                 }
                 // If the sequences have the same mutations in the total identity region
                 if (eqmut == (valdf - vald0)){
-
-                    // Determines location of the delimiting mutations for each block (donor and receptor)
-                    vald0 = location(junction - 0.5 * tractlength, pres, i, donor);
-                    valdf = location(junction + 0.5 * tractlength, pres, i, donor);
-                    valr0 = location(junction - 0.5 * tractlength, pres, i, receptor);
-                    valrf = location(junction + 0.5 * tractlength, pres, i, receptor);
+                        // Determines location of the delimiting mutations for each block (donor and receptor)
+                    vald0 = location(junction - 0.5 * tractlength, pres, chrDonor, donor);
+                    valdf = location(junction + 0.5 * tractlength, pres, chrDonor, donor);
+                    valr0 = location(junction - 0.5 * tractlength, pres, chrReceptor, receptor);
+                    valrf = location(junction + 0.5 * tractlength, pres, chrReceptor, receptor);
                     val = (valdf - vald0)-(valrf - valr0); // val is the number of positions to shift
                     // Calculates differences between both sequences
                     differences = 0;
                     //Corrected bug; it used to say k<=
                     for (k = vald0; k < valdf; k++) {
-                        otherk = location(chr[0].mutation[donor][k], pres, i, receptor);
-                        if (chr[0].mutation[receptor][otherk] != chr[0].mutation[donor][k]){
+                        otherk = location(chr1[0].mutation[donor][k], pres, chrReceptor, receptor);
+                        if (chr2[0].mutation[receptor][otherk] != chr1[0].mutation[donor][k]){
                             differences++;
                         }
                     }
                     //Corrected bug; it used to say k<=
                     for (k = valr0; k < valrf; k++) {
-                        otherk = location(chr[0].mutation[receptor][k], pres, i, donor);
-                        if (chr[0].mutation[donor][otherk] != chr[0].mutation[receptor][k]){
+                        otherk = location(chr2[0].mutation[receptor][k], pres, chrDonor, donor);
+                        if (chr1[0].mutation[donor][otherk] != chr2[0].mutation[receptor][k]){
                             differences++;
                         }
                     }
-                    // If differences do not exceed the identity threshold for all the tractlength
-                    if(differences <= tractlength*(1-(IdentityInConvTract/100))){
-
-                        // Change receptor mutations in chr[0].mutation[receptor][] array
+                    // If differences do not exceed the similarity threshold for all the tractlength (MESH 2.0)
+                    if(differences <= tractlength*(1-(similarityInConvTract/100))){
+                            // Change receptor mutations in chr2[0].mutation[receptor][] array
                         if (val > 0) {
-                            for (k = chr[0].mpb[receptor] + val - 1; k >= valrf + val; k--) {
-                                chr[0].mutation[receptor][k] = chr[0].mutation[receptor][k - val];
+                            for (k = chr2[0].mpb[receptor] + val - 1; k >= valrf + val; k--) {
+                                chr2[0].mutation[receptor][k] = chr2[0].mutation[receptor][k - val];
                             }
                         }
                         if (val < 0) {
-                            for (k = valrf + val; k < chr[0].mpb[receptor] + val; k++) {
-                                chr[0].mutation[receptor][k] = chr[0].mutation[receptor][k - val];
+                            for (k = valrf + val; k < chr2[0].mpb[receptor] + val; k++) {
+                                chr2[0].mutation[receptor][k] = chr2[0].mutation[receptor][k - val];
                             }
                         }
                         for (k = 0; k < (valdf - vald0); k++) {
-                            chr[0].mutation[receptor][k + valr0] = chr[0].mutation[donor][k + vald0];
+                            chr2[0].mutation[receptor][k + valr0] = chr1[0].mutation[donor][k + vald0];
                         }
-                        // Change receptor chr[0].mpb[] array
-                        chr[0].mpb[receptor] += val;
+                        // Change receptor chr2[0].mpb[] array
+                        chr2[0].mpb[receptor] += val;
                     }
                 }
             }
@@ -1875,7 +1933,7 @@ void print_fertility(){
     out.open("fertility.out");
     for (std::vector<fertility_info>::iterator it = fertility_list.begin() ; it != fertility_list.end(); ++it){
             //printf ("%d|%d, ",(*it).x,(*it).y);
-            cout << (*it).x << " " << (*it).y << endl;
+         //   cout << (*it).x << " " << (*it).y << endl;
         }
     // for (int tt=0 ; tt < PROMETHEUS ; tt++) { for (int i=0 ; i < 2*N ; i++){
          //  	    	 cout << fertility[i][tt] << " ";} cout << "\n";} cout << "\n\n";
@@ -1886,15 +1944,19 @@ float round(float number_to_round, int decimal_places) // pow() doesn't work wit
     return int(number_to_round * pow(10.0, decimal_places) + .50001) /  pow(10.0, decimal_places);
 }
 
-//void initialize_fertility_matrix(bool (*fertility)[2*N][PROMETHEUS]){
-//	static const bool z[2*N][PROMETHEUS] = { false };
-//	memcpy(fertility, &z, sizeof z);
-//	for (int i=0 ; i < 2*N ; i++){
-//		fertility[i][PROMETHEUS-1] = true;
-//	}
-//
-//}
+bool sortx (fertility_info i,fertility_info j) {
+    int tt1 = (i).x;
+    int tt2 = (j).x;
+    return (tt1<tt2);
 
+}
+
+bool sorty (fertility_info i,fertility_info j) {
+    int tt1 = (i).y;
+    int tt2 = (j).y;
+    return (tt1<tt2);
+
+}
 
 void sedus::requestWork()
 {
@@ -1934,25 +1996,26 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
 
     int argumentscount =8;
     //main parameters
-    letter = params->id;
     dir = params->dir;
 
     //exec parameters
     #undef SUPERTIME
     #define SUPERTIME sup
+    letter = params->exec.id;
     sup=params->exec.runs;
     SAMPLE=params->exec.sample_size;
     harmonic = 0.0;
     for (int i=1;i<2*SAMPLE;i++){
         harmonic = harmonic + (double) 1/i;
     }
-    printf("%f %d \n" ,harmonic, SAMPLE);
+   // printf("%f %d \n" ,harmonic, SAMPLE);
     PROMETHEUS = params->exec.snapshots;
 
     //main parameters
     N = params->main.N;
     THETA = params->main.theta;
-    BLOCKLENGTH = params->main.blocklenght;
+    BLOCKLENGTH = params->main.blocklength;
+    dupType = params->main.dupType;
     if(params->main.israndom){
         timeToFixation=0;
     }else{
@@ -1964,13 +2027,14 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
 
     //igc parameters
     meanTractLength=params->igc.lambda;
-    numbptotalidentity=params->igc.MEPS;
+    meps=params->igc.MEPS;
     C = params->igc.C;
     kappa = C / (4 * N * meanTractLength);
+    sameDifIGC = params->igc.w_samedif;
 
     //crossover parameters
     R = params->crossover.R;
-    rho = R / (4 * N);
+    rho = R / (4 * N * BLOCKLENGTH);
 
     //output files parameters
     prof_f = params->outs.proffile;
@@ -1980,13 +2044,6 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     SFS_f = params->outs.SFSfile;
 
     //VARIABLES with some dependency with those prior
-    //chrom::setfirst(B);
-    //for(unsigned int i=0;i<chrom.mutation.size();i++){chrom.mutation[i].resize(BLOCKLENGTH);}
-    //chrom ch1();
-    //chrom ch2();
-    //std::vector<chrom> ch1v;
-    //table=ch1v;
-    //pointer=ch2;
     multihit.resize(BLOCKLENGTH);
     table.resize(4*N);
     pointer.resize(2);for(unsigned int i=0;i<pointer.size();i++){pointer[i].resize(2*N);}
@@ -1999,18 +2056,8 @@ sedus::sedus(parameters *params, QObject *parent):QObject(parent)
     fertility_ini.resize(2 * N);for(unsigned int i=0;i<fertility_ini.size();i++){fertility_ini[i].resize(PROMETHEUS);}
     recombimatrix.resize(2 * N);for(unsigned int i=0;i<recombimatrix.size();i++){recombimatrix[i].resize(PROMETHEUS);}
     duplicontent.resize(2);for(unsigned int i=0;i<duplicontent.size();i++){duplicontent[i].resize(2*N);}
+        IGCmatrix.resize(2 * N);for(unsigned int i=0;i<IGCmatrix.size();i++){IGCmatrix[i].resize(PROMETHEUS);}
 
-    /*ancestry[2 * N][PROMETHEUS];
-    fertility[2 * N][PROMETHEUS]; // Boolean Matrix codifying if a chromosome has descendants in the final generation of each era (each era is equivalent to PROMETHEUS generations) or not
-    fertility_ini[2 * N][PROMETHEUS]; //Matrix fertility initialization
-    recombimatrix[2 * N][PROMETHEUS];
-    */
-    //float timeToFixationFloat; sscanf (argv[5],"%f",&timeToFixationFloat);
-    /*float timeToFixationFloat=params->main.fixation_linear;
-    cout << timeToFixationFloat << endl;
-    timeToFixation = (int) (timeToFixationFloat * N); // timeToFixation must be >= 1
-    cout << timeToFixation << endl;*/
-    //float argDonorRatio; sscanf (argv[6], "%f", &argDonorRatio);
     float argDonorRatio=params->igc.donor;
     donorRatio = argDonorRatio;
     argc = argumentscount;

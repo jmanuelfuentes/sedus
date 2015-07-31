@@ -55,6 +55,7 @@ class sedus : public QObject
 
 public:
     struct param_exec{
+        std::string id;
         int runs;
         int sample_size;
         int snapshots;
@@ -62,9 +63,10 @@ public:
     struct param_main{
         int N;
         double theta;
-        int blocklenght;
+        int blocklength;
         int burnin;
         bool israndom;
+        bool dupType;
         float fixation_linear;
         int total;
     };
@@ -73,6 +75,7 @@ public:
         int lambda;
         float donor;
         int MEPS;
+        float w_samedif;
     };
     struct hotspot{
         double begin;
@@ -104,7 +107,6 @@ public:
         param_crossover crossover;
         param_plot plot;
         param_outs outs;
-        std::string id;
         std::string dir;
     };
     //extern parameters params;
@@ -123,9 +125,9 @@ private:
 
     bool _abort;
     QMutex mutex;
-    void phaseIII();
+    void phaseIII(float);
     prev_pres phaseI();
-    int phaseII(int,int,int);
+    int phaseII(int,int,int,bool, float);
 
 signals:
     void workRequested();

@@ -22,7 +22,7 @@
 #**                                                                        **
 #****************************************************************************
 #**           Authors: Diego A. Hartasánchez,Oriol Vallès-Codina,          **
-#**                   Marina Brasó-Vives, Juan Manuel Fuentes              **
+#**                   Marina Brasó-Vives, Juanma Fuentes-Díaz              **
 #**                   and Arcadi Navarro                                   **
 #**  Website/Contact: http://www.biologiaevolutiva.org/sedus/              **
 #**             Date: 01.10.14                                             **
