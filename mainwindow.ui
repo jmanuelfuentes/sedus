@@ -1339,7 +1339,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>w (Ratio of IGC events on the same / homologous chromosomes):</string>
+       <string>w (Ratio of IGC events on the same / homologous chromosome):</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
