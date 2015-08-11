@@ -52,7 +52,6 @@
 #include <unistd.h>
 #include <QProgressBar>
 
-
 using namespace std;
 
 ////////////////////////////////////////
@@ -322,14 +321,22 @@ void sedus::dowork() {
 
         open_files();
 
-        // Printing profile
+        //PROFILE IN TAB FORMAT
         if(prof_f==true){
-            profile << "Runs: " << SUPERTIME << "\n" << "Sample size: " << SAMPLE << "\n" << "Generations between snapshots (k): " << PROMETHEUS << "\n" << "Population size (N): " << N << "\n" << "Theta: " << THETA << "\n" << "Block length: " << BLOCKLENGTH << "\n" << "Generations in BurnIn Phase: " << BURNIN << "\n"<< "Type of fixation trajectory: ";
-            if(timeToFixation==0){profile << "Random" << "\n";} else {profile << "Linear with a duration of " << timeToFixation << " generations\n";}
-            profile  << "Total number of generations: " << TIMELENGTH << "\n" << "C: " << C << "\n"<< "mean IGC tract length: " << meanTractLength << "\n" << "Donor-acceptor bias: " << donorRatio << "\n" << "MEPS: " << meps  << "\n" << "R: " << R << "\n" << "Number of crossover regions: " << numHS << "\n";
-            for (j = 0; j < numHS; j++) {
-                profile  << "Crossover region number " << j << ": // st: " << crossoverBegin[j] << " // end: " << crossoverEnd[j] << " // frac: " << crossoverFrac[j] << "\n";
-            }
+            profile << "Runs\tSampleSize\tGenerationsBetweenSnapshots(k)\tPopulationSize(N)\tTheta\tBlockLength\tDuplicationOrigin\tBurnIn\tTimeToFixation\t";
+            profile  << "TimeLength\tC\tMeanTractLength\tDonorRatio\tMEPS\tProportionSameDifIGC(w)\tR\tNumOfHS";
+                for (j = 0; j < numHS; j++) {
+                    profile  << "\tHS" << j << "_st\tHS" << j << "_end\tHS" << j <<"_ratio";
+                }
+                profile << "\n";
+
+                profile << SUPERTIME << "\t" << SAMPLE << "\t" << PROMETHEUS << "\t" << N << "\t" << THETA << "\t" << BLOCKLENGTH << "\t" << dupType << "\t" ;
+                profile << BURNIN << "\t" << timeToFixation << "\t" << TIMELENGTH << "\t" << C << "\t"<< meanTractLength << "\t";
+                profile << donorRatio << "\t" << meps  << "\t" << sameDifIGC << "\t" << R << "\t" << numHS << "";
+                for (j = 0; j < numHS; j++) {
+                    profile << "\t" << crossoverBegin[j] << "\t" << crossoverEnd[j] << "\t" << crossoverFrac[j] << "";
+                }
+             profile << "\n";
         }
         if(mut_f==true){
             for (j = 0; j < B; j++) {

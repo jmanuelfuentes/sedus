@@ -1339,7 +1339,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>w (Ratio of IGC events on the same / homologous chromosome):</string>
+       <string>w (Proportion of IGC events on the same / homologous chromosomes):</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -1477,12 +1477,12 @@
         <rect>
          <x>300</x>
          <y>40</y>
-         <width>67</width>
+         <width>131</width>
          <height>17</height>
         </rect>
        </property>
        <property name="text">
-        <string>Ratio</string>
+        <string>Relative frequency</string>
        </property>
       </widget>
       <widget class="QFrame" name="hot1">
