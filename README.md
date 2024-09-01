@@ -28,9 +28,4 @@ SeDuS is implemented in C++ and offers both command line and graphical user inte
 - **C++ Compiler**: Required if you choose to compile the source code yourself.
 - **Qt Libraries**: Necessary for running the graphical user interface (only if compiling from source).
   
-### Building from Source
 
-1. **Clone** the repository:
-   ```bash
-   git clone https://github.com/jmanuelfuentes/sedus.git
-   cd sedus
