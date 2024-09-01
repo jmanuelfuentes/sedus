@@ -32,5 +32,5 @@ SeDuS is implemented in C++ and offers both command line and graphical user inte
 
 1. **Clone** the repository:
    ```bash
-   git clone [https://www.biologiaevolutiva.org/sedus.git](https://github.com/jmanuelfuentes/sedus.git)
+   git clone https://github.com/jmanuelfuentes/sedus.git
    cd sedus
