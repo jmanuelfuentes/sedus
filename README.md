@@ -28,15 +28,9 @@ SeDuS is implemented in C++ and offers both command line and graphical user inte
 - **C++ Compiler**: Required if you choose to compile the source code yourself.
 - **Qt Libraries**: Necessary for running the graphical user interface (only if compiling from source).
   
-### Installation from Binaries
-
-1. **Download** the appropriate binary for your operating system from the [SeDuS website](http://www.biologiaevolutiva.org/sedus/).
-2. **Unzip** the downloaded file to a directory of your choice.
-3. **Run** the executable to start SeDuS.
-
 ### Building from Source
 
 1. **Clone** the repository:
    ```bash
-   git clone https://www.biologiaevolutiva.org/sedus.git
+   git clone [https://www.biologiaevolutiva.org/sedus.git](https://github.com/jmanuelfuentes/sedus.git)
    cd sedus
